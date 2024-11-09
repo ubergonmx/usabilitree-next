@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { RocketIcon } from "@/components/icons";
-import { APP_TITLE } from "@/lib/constants";
 import { UserDropdown } from "@/app/(main)/_components/user-dropdown";
 import { getCurrentUser } from "@/lib/auth/session";
 import Logo from "@/components/logo";

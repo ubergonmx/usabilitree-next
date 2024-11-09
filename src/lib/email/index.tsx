@@ -39,14 +39,14 @@ const getEmailTemplate = <T extends EmailTemplate>(template: T, props: PropsMap[
   }
 };
 
-const smtpConfig = {
-  host: env.SMTP_HOST,
-  port: env.SMTP_PORT,
-  auth: {
-    user: env.SMTP_USER,
-    pass: env.SMTP_PASSWORD,
-  },
-};
+// const smtpConfig = {
+//   host: env.SMTP_HOST,
+//   port: env.SMTP_PORT,
+//   auth: {
+//     user: env.SMTP_USER,
+//     pass: env.SMTP_PASSWORD,
+//   },
+// };
 
 // Uncomment if you're using nodemailer
 // const transporter = createTransport(smtpConfig as TransportOptions);

@@ -46,9 +46,7 @@
       "indexes": {
         "email_verification_codes_user_id_unique": {
           "name": "email_verification_codes_user_id_unique",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": true
         }
       },
@@ -57,12 +55,8 @@
           "name": "email_verification_codes_user_id_users_id_fk",
           "tableFrom": "email_verification_codes",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -107,16 +101,12 @@
       "indexes": {
         "participants_session_id_unique": {
           "name": "participants_session_id_unique",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": true
         },
         "idx_participants_study_id": {
           "name": "idx_participants_study_id",
-          "columns": [
-            "study_id"
-          ],
+          "columns": ["study_id"],
           "isUnique": false
         }
       },
@@ -125,12 +115,8 @@
           "name": "participants_study_id_studies_id_fk",
           "tableFrom": "participants",
           "tableTo": "studies",
-          "columnsFrom": [
-            "study_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["study_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -167,9 +153,7 @@
       "indexes": {
         "idx_password_reset_tokens_user_id": {
           "name": "idx_password_reset_tokens_user_id",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -178,12 +162,8 @@
           "name": "password_reset_tokens_user_id_users_id_fk",
           "tableFrom": "password_reset_tokens",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -220,9 +200,7 @@
       "indexes": {
         "idx_sessions_user_id": {
           "name": "idx_sessions_user_id",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -231,12 +209,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -304,10 +278,7 @@
       "indexes": {
         "idx_studies_lookup": {
           "name": "idx_studies_lookup",
-          "columns": [
-            "user_id",
-            "status"
-          ],
+          "columns": ["user_id", "status"],
           "isUnique": false
         }
       },
@@ -316,12 +287,8 @@
           "name": "studies_user_id_users_id_fk",
           "tableFrom": "studies",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -374,10 +341,7 @@
       "indexes": {
         "idx_collaborations": {
           "name": "idx_collaborations",
-          "columns": [
-            "study_id",
-            "user_id"
-          ],
+          "columns": ["study_id", "user_id"],
           "isUnique": false
         }
       },
@@ -386,12 +350,8 @@
           "name": "study_collaborators_study_id_studies_id_fk",
           "tableFrom": "study_collaborators",
           "tableTo": "studies",
-          "columnsFrom": [
-            "study_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["study_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -399,12 +359,8 @@
           "name": "study_collaborators_user_id_users_id_fk",
           "tableFrom": "study_collaborators",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -484,10 +440,7 @@
       "indexes": {
         "idx_task_results_lookup": {
           "name": "idx_task_results_lookup",
-          "columns": [
-            "participant_id",
-            "task_index"
-          ],
+          "columns": ["participant_id", "task_index"],
           "isUnique": false
         }
       },
@@ -496,12 +449,8 @@
           "name": "task_results_participant_id_participants_id_fk",
           "tableFrom": "task_results",
           "tableTo": "participants",
-          "columnsFrom": [
-            "participant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["participant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -577,12 +526,8 @@
           "name": "tree_configs_study_id_studies_id_fk",
           "tableFrom": "tree_configs",
           "tableTo": "studies",
-          "columnsFrom": [
-            "study_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["study_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -692,23 +637,17 @@
       "indexes": {
         "users_discord_id_unique": {
           "name": "users_discord_id_unique",
-          "columns": [
-            "discord_id"
-          ],
+          "columns": ["discord_id"],
           "isUnique": true
         },
         "users_google_id_unique": {
           "name": "users_google_id_unique",
-          "columns": [
-            "google_id"
-          ],
+          "columns": ["google_id"],
           "isUnique": true
         },
         "users_email_unique": {
           "name": "users_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },

@@ -1,6 +1,6 @@
 import { forwardRef, type SVGProps } from "react";
 import { cn } from "@/lib/utils";
-import { LucideProps } from "lucide-react";
+// import { LucideProps } from "lucide-react";
 
 const AnimatedSpinner = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>(
   ({ className, ...props }, ref) => (
