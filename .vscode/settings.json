@@ -1,0 +1,40 @@
+{
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": false,
+  "editor.formatOnSaveMode": "file",
+  "files.autoSave": "onFocusChange",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "vs-code-prettier-eslint.prettierLast": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.format": "explicit"
+  },
+  "git.enableSmartCommit": false,
+  "git.suggestSmartCommit": false,
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "cSpell.words": [
+    "aaronpal",
+    "clsx",
+    "compat",
+    "Lucide",
+    "nextjs",
+    "nprogress",
+    "opennextjs",
+    "oslojs",
+    "Parens",
+    "sendgrid",
+    "signout",
+    "signup",
+    "sonner",
+    "svgr",
+    "tailwindcss",
+    "typegen",
+    "Usabili",
+    "usabilitree",
+    "vaul",
+    "vercel"
+  ]
+}

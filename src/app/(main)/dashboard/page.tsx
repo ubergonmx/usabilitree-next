@@ -1,0 +1,31 @@
+import { redirect } from "next/navigation";
+import { env } from "@/env";
+import { type Metadata } from "next";
+import * as React from "react";
+import { Studies } from "./_components/studies";
+import { StudiesSkeleton } from "./_components/studies-skeleton";
+import { Paths } from "@/lib/constants";
+import { getCurrentUser } from "@/lib/auth/session";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
+  title: "Studies",
+  description: "Manage your studies here",
+};
+
+export default async function DashboardPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect(Paths.Login);
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold md:text-4xl">Studies</h1>
+        <p className="text-sm text-muted-foreground">Manage your studies here</p>
+      </div>
+      <React.Suspense fallback={<StudiesSkeleton />}>
+        <Studies />
+      </React.Suspense>
+    </div>
+  );
+}
