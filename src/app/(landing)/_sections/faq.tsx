@@ -13,21 +13,21 @@ export default function FAQ() {
       question: "What is this website for?",
       answer: (
         <span>
-          I made this website to help students, UX designers, and researchers create tree tests and
-          card sorts for free.
+          I made this website to help students, UX designers, and researchers create tree tests for
+          free. Card sorting will be added soon.
         </span>
       ),
     },
-    {
-      question: "Why is it called UsabiliTree?",
-      answer: (
-        <span>
-          UsabiliTree is a portmanteau of usability and tree. It&apos;s a play on the words
-          usability and tree test. At first, I only wanted to build a tree test tool and bought that
-          domain name, but I decided to add a card sort tool as well.
-        </span>
-      ),
-    },
+    // {
+    //   question: "Why is it called UsabiliTree?",
+    //   answer: (
+    //     <span>
+    //       UsabiliTree is a portmanteau of usability and tree. It&apos;s a play on the words
+    //       usability and tree test. At first, I only wanted to build a tree test tool and bought that
+    //       domain name, but I decided to add a card sort tool as well.
+    //     </span>
+    //   ),
+    // },
     {
       question: "Is this tool free?",
       answer: (

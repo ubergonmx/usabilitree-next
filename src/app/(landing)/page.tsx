@@ -4,9 +4,9 @@ import { Footer } from "./_sections/footer";
 import FAQ from "./_sections/faq";
 
 export const metadata = {
-  title: "Free Tree Testing & Card Sorting Tool",
+  title: "Free Tree Testing Tool",
   description:
-    "Create, conduct, and analyze tree testsing and card sorting for free. Optimize your information architecture with valuable insights.",
+    "Create, conduct, and analyze tree tests for free. Optimize your information architecture with valuable insights.",
 };
 
 export default async function Home() {

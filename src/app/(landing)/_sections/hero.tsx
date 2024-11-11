@@ -51,7 +51,7 @@ function HeroTitles() {
           }}
         >
           <span className="bg-gradient-to-r from-[#72FFA4] to-[#00D9C2] bg-clip-text text-transparent">
-            Tree Test & Card Sort
+            Tree Testing
           </span>
         </motion.span>
       </motion.h1>
@@ -65,8 +65,8 @@ function HeroTitles() {
           ease,
         }}
       >
-        Create, conduct, and analyze tree testsing and card sorting for free. Optimize your
-        information architecture with valuable insights.
+        Create, conduct, and analyze tree tests for free. Optimize your information architecture
+        with valuable insights.
       </motion.p>
     </div>
   );
