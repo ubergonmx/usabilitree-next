@@ -7,7 +7,7 @@ import { db } from "@/db";
 import { Paths } from "@/lib/constants";
 import { users } from "@/db/schema";
 import { setSession } from "@/lib/auth/session";
-// import { notifyNewUser } from "@/lib/discord";
+import { notifyNewUser } from "@/lib/discord";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -58,12 +58,12 @@ export async function GET(request: Request): Promise<Response> {
         discordId: discordUser.id,
         avatar,
       });
-      // await notifyNewUser(
-      //   userId,
-      //   discordUser.email,
-      //   discordUser.verified ? "Yes (Discord)" : "No (Discord)",
-      //   avatar
-      // );
+      await notifyNewUser(
+        userId,
+        discordUser.email,
+        discordUser.verified ? "Yes (Discord)" : "No (Discord)",
+        avatar
+      );
       await setSession(userId);
       return new Response(null, {
         status: 302,

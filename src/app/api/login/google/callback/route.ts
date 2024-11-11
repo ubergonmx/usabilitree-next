@@ -6,7 +6,7 @@ import { Paths } from "@/lib/constants";
 import { db } from "@/db";
 import { eq, or } from "drizzle-orm";
 import { users } from "@/db/schema";
-// import { notifyNewUser } from "@/lib/discord";
+import { notifyNewUser } from "@/lib/discord";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -47,12 +47,12 @@ export async function GET(request: Request): Promise<Response> {
         googleId: googleUser.sub,
         avatar,
       });
-      // await notifyNewUser(
-      //   userId,
-      //   googleUser.email,
-      //   googleUser.email_verified ? "Yes (Google)" : "No (Google)",
-      //   avatar
-      // );
+      await notifyNewUser(
+        userId,
+        googleUser.email,
+        googleUser.email_verified ? "Yes (Google)" : "No (Google)",
+        avatar
+      );
       await setSession(userId);
       return new Response(null, {
         status: 302,

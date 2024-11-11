@@ -9,13 +9,16 @@ import {
 
 export class DiscordClient {
   private rest: REST;
-  private DISCORD_ID = 263841596213035009;
+  private DISCORD_ID = "263841596213035009";
 
   constructor() {
     this.rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
   }
 
-  private async createDM(discordId: number = this.DISCORD_ID) {
+  private async createDM(discordId: string | undefined) {
+    if (!discordId) {
+      discordId = this.DISCORD_ID;
+    }
     return this.rest.post(Routes.userChannels(), {
       body: {
         recipient_id: discordId,
@@ -23,7 +26,7 @@ export class DiscordClient {
     }) as Promise<RESTPostAPICurrentUserCreateDMChannelResult>;
   }
 
-  async sendEmbed(embed: APIEmbed, discordId?: number) {
+  async sendEmbed(embed: APIEmbed, discordId?: string) {
     const { id } = await this.createDM(discordId);
     return this.rest.post(Routes.channelMessages(id), {
       body: {
@@ -43,7 +46,7 @@ export const notifyNewUser = async (
   await discord.sendEmbed({
     title: "👤 New User",
     description: "A new user has signed up!",
-    color: 0x00d9c2,
+    color: 0x44eaaf,
     fields: [
       {
         name: "ID",
