@@ -1,5 +1,6 @@
 import { CodeIcon } from "@radix-ui/react-icons";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 
 const githubUrl = "https://github.com/ubergonmx";
 
@@ -10,9 +11,11 @@ export const Footer = () => {
         <CodeIcon className="mr-2 h-6 w-6" />
         <p className="text-sm">
           Built by{" "}
-          <a className="underline underline-offset-4" href={githubUrl}>
-            aaronpal
-          </a>
+          <Button variant="linkHover1" className="p-0 after:w-[60px]">
+            <a href={githubUrl} target="_blank">
+              aaronpal
+            </a>
+          </Button>
           .
         </p>
         <div className="ml-auto">
