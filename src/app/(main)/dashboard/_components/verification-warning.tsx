@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth/session";
 import Link from "next/link";
 
-export async function VerificiationWarning() {
+export async function VerificationWarning() {
   const user = await getCurrentUser();
 
   return user?.emailVerified === false ? (
