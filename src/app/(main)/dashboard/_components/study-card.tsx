@@ -18,6 +18,7 @@ import * as React from "react";
 interface StudyCardProps {
   study: Studies;
   userName?: string;
+  isOwner: boolean;
 }
 
 export const StudyCard = ({ study, userName, isOwner }: StudyCardProps) => {
