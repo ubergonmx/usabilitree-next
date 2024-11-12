@@ -1,6 +1,5 @@
 import { forwardRef, type SVGProps } from "react";
 import { cn } from "@/lib/utils";
-// import { LucideProps } from "lucide-react";
 
 const AnimatedSpinner = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>(
   ({ className, ...props }, ref) => (
@@ -74,7 +73,16 @@ GoogleLogoIcon.displayName = "GoogleLogoIcon";
 
 export { AnimatedSpinner, CreditCard, GoogleLogoIcon };
 
-export { SaveIcon, WorkflowIcon, ChevronDown, ChevronRight, ArrowRight } from "lucide-react";
+export {
+  SaveIcon,
+  WorkflowIcon,
+  ChevronDown,
+  ChevronRight,
+  ArrowRight,
+  ListChecksIcon as ChecklistIcon,
+  UsersIcon,
+  CircleCheckBigIcon,
+} from "lucide-react";
 
 export {
   EyeOpenIcon,
@@ -107,4 +115,7 @@ export {
   ArrowLeftIcon,
   Link2Icon as LinkIcon,
   BarChartIcon,
+  Share1Icon as ShareIcon,
+  TimerIcon,
+  TargetIcon,
 } from "@radix-ui/react-icons";
