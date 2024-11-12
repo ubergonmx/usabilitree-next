@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil2Icon, LinkIcon, BarChartIcon } from "@/components/icons";
+import { Pencil2Icon, LinkIcon, BarChartIcon, UsersIcon } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ interface StudyCardProps {
   userName?: string;
 }
 
-export const StudyCard = ({ study, userName }: StudyCardProps) => {
+export const StudyCard = ({ study, userName, isOwner }: StudyCardProps) => {
   const renderActionButton = () => {
     if (study.status === "draft") {
       return (
@@ -46,25 +46,30 @@ export const StudyCard = ({ study, userName }: StudyCardProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="line-clamp-2 text-base">
-          {study.title}
+        <CardTitle className="flex items-center justify-between text-base">
+          <div className="line-clamp-2 flex items-center gap-2">
+            {study.title}
+            {!isOwner && <UsersIcon className="h-4 w-4 text-muted-foreground" />}
+          </div>
           {study.status === "active" && (
             <Button
               variant="ghost"
               size="sm"
-              className="ml-2 h-6 p-0 text-muted-foreground hover:text-foreground"
+              className="h-6 p-0 text-muted-foreground hover:text-foreground"
               onClick={() => window.open(`/treetest/${study.id}`, "_blank")}
             >
               <LinkIcon className="h-4 w-4" />
             </Button>
           )}
         </CardTitle>
-        <CardDescription className="line-clamp-1 text-sm">
-          {userName ? <span>{userName} at</span> : null}
-          {new Date(Number(study.createdAt) / 1000).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-          })}
+        <CardDescription className="flex flex-col space-y-1 text-sm">
+          {userName && <span>Shared by {userName}</span>}
+          <span>
+            {new Date(Number(study.createdAt) / 1000).toLocaleString(undefined, {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </span>
         </CardDescription>
       </CardHeader>
       <CardContent className="line-clamp-3 text-sm">{study.description}</CardContent>
