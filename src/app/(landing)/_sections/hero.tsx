@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "@/components/icons";
 import { DotPatternBackground } from "../_components/dot-pattern-background";
 import Link from "next/link";
 import { Paths } from "@/lib/constants";

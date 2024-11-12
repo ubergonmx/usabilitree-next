@@ -1,5 +1,4 @@
-import { relations } from "drizzle-orm";
-import { sqliteTable, integer, text, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
@@ -63,6 +62,26 @@ export const passwordResetTokens = sqliteTable(
   })
 );
 
+export const studyCollaborators = sqliteTable(
+  "study_collaborators",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    studyId: text("study_id")
+      .notNull()
+      .references(() => studies.id, { onDelete: "cascade" }),
+    userId: text("user_id", { length: 21 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: text("role").notNull().default("viewer"),
+    invitedAt: integer("invited_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(STRFTIME('%s', 'now') * 1000)`),
+  },
+  (table) => ({
+    collaborationIndex: index("idx_collaborations").on(table.studyId, table.userId),
+  })
+);
+
 export const studies = sqliteTable(
   "studies",
   {
@@ -73,6 +92,7 @@ export const studies = sqliteTable(
     title: text("title").notNull(),
     description: text("description"),
     status: text("status").notNull().default("draft"),
+    type: text("type").notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),
@@ -85,42 +105,45 @@ export const studies = sqliteTable(
   })
 );
 
-export const studyCollaborators = sqliteTable(
-  "study_collaborators",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    studyId: text("study_id")
-      .notNull()
-      .references(() => studies.id, { onDelete: "cascade" }),
-    userId: text("user_id", { length: 21 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role").notNull().default("editor"),
-    invitedAt: integer("invited_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(STRFTIME('%s', 'now') * 1000)`),
-  },
-  (table) => ({
-    collaborationIndex: index("idx_collaborations").on(table.studyId, table.userId),
-  })
-);
-
 export const treeConfigs = sqliteTable("tree_configs", {
   id: text("id").primaryKey(),
   studyId: text("study_id")
     .notNull()
     .references(() => studies.id, { onDelete: "cascade" }),
-  treeStructure: text("tree_structure").notNull(),
-  tasks: text("tasks").notNull(),
+  treeStructure: text("tree_structure").notNull(), // Raw string representation
+  parsedTree: text("parsed_tree").notNull(), // JSON string of TreeNode[]
   welcomeMessage: text("welcome_message"),
   completionMessage: text("completion_message"),
-  maxTimePerTaskSeconds: integer("max_time_per_task_seconds"),
   requireConfidenceRating: integer("require_confidence_rating", {
     mode: "boolean",
   })
     .notNull()
     .default(true),
 });
+
+export const treeTasks = sqliteTable(
+  "tree_tasks",
+  {
+    id: text("id").primaryKey(),
+    studyId: text("study_id")
+      .notNull()
+      .references(() => studies.id, { onDelete: "cascade" }),
+    taskIndex: integer("task_index").notNull(),
+    description: text("description").notNull(),
+    expectedAnswer: text("expected_answer").notNull(), // The correct path/destination
+    maxTimeSeconds: integer("max_time_seconds"), // Moved from treeConfigs to per-task
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(STRFTIME('%s', 'now') * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(STRFTIME('%s', 'now') * 1000)`),
+  },
+  (table) => ({
+    taskOrderIndex: index("idx_tree_tasks_order").on(table.studyId, table.taskIndex),
+    uniqueTaskPerStudy: uniqueIndex("unq_study_task_index").on(table.studyId, table.taskIndex),
+  })
+);
 
 export const participants = sqliteTable(
   "participants",
@@ -130,6 +153,11 @@ export const participants = sqliteTable(
       .notNull()
       .references(() => studies.id, { onDelete: "cascade" }),
     sessionId: text("session_id").notNull().unique(),
+    startedAt: integer("started_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(STRFTIME('%s', 'now') * 1000)`),
+    completedAt: integer("completed_at", { mode: "timestamp" }), // Null until fully completed
+    timeToCompleteSeconds: integer("time_to_complete_seconds"), // Total time taken for all tasks
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),
@@ -139,14 +167,16 @@ export const participants = sqliteTable(
   })
 );
 
-export const taskResults = sqliteTable(
-  "task_results",
+export const treeTaskResults = sqliteTable(
+  "tree_task_results",
   {
     id: text("id").primaryKey(),
     participantId: text("participant_id")
       .notNull()
       .references(() => participants.id, { onDelete: "cascade" }),
-    taskIndex: integer("task_index").notNull(),
+    taskId: text("task_id")
+      .notNull()
+      .references(() => treeTasks.id, { onDelete: "cascade" }),
     successful: integer("successful", { mode: "boolean" }).notNull(),
     directPathTaken: integer("direct_path_taken", {
       mode: "boolean",
@@ -159,64 +189,13 @@ export const taskResults = sqliteTable(
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),
   },
   (table) => ({
-    taskLookupIndex: index("idx_task_results_lookup").on(table.participantId, table.taskIndex),
+    taskLookupIndex: index("idx_task_results_lookup").on(table.participantId, table.taskId),
   })
 );
 
-export const usersRelations = relations(users, ({ many }) => ({
-  studies: many(studies),
-  studyCollaborations: many(studyCollaborators),
-  sessions: many(sessions),
-  passwordResetTokens: many(passwordResetTokens),
-  emailVerificationCodes: many(emailVerificationCodes),
-}));
-
-export const studiesRelations = relations(studies, ({ one, many }) => ({
-  user: one(users, { fields: [studies.userId], references: [users.id] }),
-  treeConfig: one(treeConfigs, {
-    fields: [studies.id],
-    references: [treeConfigs.studyId],
-  }),
-  participants: many(participants),
-  collaborators: many(studyCollaborators),
-}));
-
-export const studyCollaboratorsRelations = relations(studyCollaborators, ({ one }) => ({
-  user: one(users, { fields: [studyCollaborators.userId], references: [users.id] }),
-  study: one(studies, { fields: [studyCollaborators.studyId], references: [studies.id] }),
-}));
-
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, { fields: [sessions.userId], references: [users.id] }),
-}));
-
-export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
-  user: one(users, { fields: [passwordResetTokens.userId], references: [users.id] }),
-}));
-
-export const emailVerificationCodesRelations = relations(emailVerificationCodes, ({ one }) => ({
-  user: one(users, { fields: [emailVerificationCodes.userId], references: [users.id] }),
-}));
-
-export const participantsRelations = relations(participants, ({ one, many }) => ({
-  study: one(studies, {
-    fields: [participants.studyId],
-    references: [studies.id],
-  }),
-  taskResults: many(taskResults),
-}));
-
-export const taskResultsRelations = relations(taskResults, ({ one }) => ({
-  participant: one(participants, {
-    fields: [taskResults.participantId],
-    references: [participants.id],
-  }),
-}));
-
-export const treeConfigsRelations = relations(treeConfigs, ({ one }) => ({
-  study: one(studies, { fields: [treeConfigs.studyId], references: [studies.id] }),
-}));
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
 export type Session = typeof sessions.$inferSelect;
+
+export type Studies = typeof studies.$inferSelect;
