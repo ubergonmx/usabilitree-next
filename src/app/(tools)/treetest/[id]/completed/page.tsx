@@ -1,19 +1,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { Card } from "@/components/ui/card";
-import { loadCompletionMessage } from "@/lib/treetest/actions";
+import { loadCompletionMessage, updateParticipantCompletion } from "@/lib/treetest/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const CompletedPage = ({ params }: { params: { id: string } }) => {
   const [completionMessage, setCompletionMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
+    const participantId = localStorage.getItem("participantId");
+
+    // Update completion time if participantId exists
+    if (participantId) {
+      updateParticipantCompletion(participantId).catch((err) => {
+        console.error("Failed to update completion time:", err);
+      });
+    }
+
+    // Remove participantId from localStorage
+    localStorage.removeItem("participantId");
+
+    // Load completion message
     loadCompletionMessage(params.id)
       .then(setCompletionMessage)
       .catch((err) => {
@@ -44,9 +54,6 @@ const CompletedPage = ({ params }: { params: { id: string } }) => {
         ) : (
           <MarkdownPreview content={completionMessage} />
         )}
-        <div className="mt-4 flex justify-end">
-          <Button onClick={() => router.push("/dashboard")}>Go to Dashboard</Button>
-        </div>
       </Card>
     </div>
   );

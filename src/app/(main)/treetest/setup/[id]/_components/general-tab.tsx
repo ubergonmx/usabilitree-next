@@ -1,7 +1,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { StudyFormData } from "./types";
+import { StudyFormData } from "@/lib/types/tree-test";
 
 interface GeneralTabProps {
   data: StudyFormData;
@@ -42,4 +42,4 @@ export function GeneralTab({ data, onChange }: GeneralTabProps) {
       </div>
     </div>
   );
-} 
+}

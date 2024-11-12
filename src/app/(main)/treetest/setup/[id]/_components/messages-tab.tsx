@@ -1,6 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { StudyFormData } from "./types";
+import { StudyFormData } from "@/lib/types/tree-test";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { Card } from "@/components/ui/card";

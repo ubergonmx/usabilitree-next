@@ -3,10 +3,10 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { StudyFormData } from "./types";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TreeNode } from "./types";
+import { TreeNode, StudyFormData } from "@/lib/types/tree-test";
+import { sanitizeTreeTestLink } from "@/lib/utils";
 
 interface TreeTabProps {
   data: StudyFormData;
@@ -49,14 +49,6 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
     return { isValid: true, level: commas };
   };
 
-  const sanitizeLink = (name: string): string => {
-    return name
-      .toLowerCase()
-      .replace(/ñ/g, "n")
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-");
-  };
-
   const buildTreeStructure = (lines: string[]): TreeNode[] => {
     const root: TreeNode[] = [];
     const stack: { node: TreeNode; level: number; path: string }[] = [];
@@ -83,11 +75,11 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
 
       // Calculate the current path
       const parentPath = stack.length > 0 ? stack[stack.length - 1].path : "";
-      const currentPath = `${parentPath}/${sanitizeLink(name)}`;
+      const currentPath = `${parentPath}/${sanitizeTreeTestLink(name)}`;
 
       if (level === 0) {
         root.push(node);
-        stack.push({ node, level, path: `/${sanitizeLink(name)}` });
+        stack.push({ node, level, path: `/${sanitizeTreeTestLink(name)}` });
       } else if (stack.length > 0) {
         const parent = stack[stack.length - 1].node;
         if (!parent.children) parent.children = [];

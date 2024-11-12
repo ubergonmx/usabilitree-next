@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { StudyFormData, TreeNode } from "./types";
+import { StudyFormData, TreeNode } from "@/lib/types/tree-test";
 import { PlusIcon, TrashIcon, CheckIcon } from "@/components/icons";
 import { toast } from "sonner";
 import {

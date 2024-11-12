@@ -1,12 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { studies, treeConfigs, treeTasks } from "@/db/schema";
+import { participants, studies, treeConfigs, treeTaskResults, treeTasks } from "@/db/schema";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { eq } from "drizzle-orm";
-import { StudyFormData, TreeNode } from "@/app/(main)/treetest/setup/[id]/_components/types";
+import { StudyFormData, TreeNode } from "@/lib/types/tree-test";
 
 const defaultWelcomeMessage = `Welcome to this Tree Test study, and thank you for agreeing to participate!
 
@@ -241,7 +241,7 @@ export async function loadCompletionMessage(id: string) {
   }
 }
 
-export async function loadTestConfig(id: string) {
+export async function loadTestConfig(id: string, preview: boolean = false, participantId?: string) {
   try {
     const [config] = await db
       .select({
@@ -263,6 +263,19 @@ export async function loadTestConfig(id: string) {
 
     if (!config) throw new Error("Test configuration not found");
 
+    if (!preview && !participantId) {
+      const [participant] = await db
+        .insert(participants)
+        .values({
+          id: nanoid(),
+          studyId: id,
+          sessionId: nanoid(),
+          startedAt: new Date(),
+        })
+        .returning({ id: participants.id });
+      participantId = participant.id;
+    }
+
     return {
       tree: JSON.parse(config.treeStructure),
       tasks: tasks.map((task) => ({
@@ -271,9 +284,60 @@ export async function loadTestConfig(id: string) {
         link: task.expectedAnswer,
       })),
       requireConfidenceRating: config.requireConfidenceRating,
+      preview,
+      participantId,
+      studyId: id,
     };
   } catch (error) {
     console.error("Failed to load test configuration:", error);
     throw new Error("Failed to load test configuration");
+  }
+}
+
+export async function storeTreeTaskResult(
+  participantId: string,
+  taskId: string,
+  result: {
+    successful: boolean;
+    directPathTaken: boolean;
+    completionTimeSeconds: number;
+    confidenceRating?: number;
+    pathTaken: string;
+    skipped: boolean;
+  }
+) {
+  try {
+    await db.insert(treeTaskResults).values({
+      id: nanoid(),
+      participantId,
+      taskId,
+      successful: result.successful,
+      directPathTaken: result.directPathTaken,
+      completionTimeSeconds: result.completionTimeSeconds,
+      confidenceRating: result.confidenceRating,
+      pathTaken: result.pathTaken,
+      skipped: result.skipped,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to store tree task result:", error);
+    throw new Error("Failed to store tree task result");
+  }
+}
+
+export async function updateParticipantCompletion(participantId: string) {
+  try {
+    await db
+      .update(participants)
+      .set({
+        completedAt: new Date(),
+      })
+      .where(eq(participants.id, participantId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update participant completion time:", error);
+    throw new Error("Failed to update participant completion time");
   }
 }

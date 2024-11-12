@@ -105,4 +105,6 @@ export {
   ChevronRightIcon,
   DotsHorizontalIcon,
   ArrowLeftIcon,
+  Link2Icon as LinkIcon,
+  BarChartIcon,
 } from "@radix-ui/react-icons";

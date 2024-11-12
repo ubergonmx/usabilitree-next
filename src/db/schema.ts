@@ -69,16 +69,13 @@ export const studyCollaborators = sqliteTable(
     studyId: text("study_id")
       .notNull()
       .references(() => studies.id, { onDelete: "cascade" }),
-    userId: text("user_id", { length: 21 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role").notNull().default("viewer"),
-    invitedAt: integer("invited_at", { mode: "timestamp" })
+    email: text("email").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),
   },
   (table) => ({
-    collaborationIndex: index("idx_collaborations").on(table.studyId, table.userId),
+    collaborationIndex: index("idx_collaborations").on(table.studyId, table.email),
   })
 );
 
@@ -157,7 +154,6 @@ export const participants = sqliteTable(
       .notNull()
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),
     completedAt: integer("completed_at", { mode: "timestamp" }), // Null until fully completed
-    timeToCompleteSeconds: integer("time_to_complete_seconds"), // Total time taken for all tasks
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),
@@ -184,6 +180,7 @@ export const treeTaskResults = sqliteTable(
     completionTimeSeconds: integer("completion_time_seconds").notNull(),
     confidenceRating: integer("confidence_rating"),
     pathTaken: text("path_taken").notNull(),
+    skipped: integer("skipped", { mode: "boolean" }).notNull().default(false),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),

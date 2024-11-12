@@ -10,5 +10,5 @@ export default function PageTheme({ children }: { children: React.ReactNode }) {
     setTheme("light"); //set your theme here after component mounts
   }, []);
 
-  return <div>{children}</div>;
+  return <>{children}</>;
 }

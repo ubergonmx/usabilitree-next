@@ -24,3 +24,25 @@ export interface TreeNode {
   link?: string;
   children?: TreeNode[];
 }
+export interface Item {
+  name: string;
+  link?: string;
+  children?: Item[];
+}
+
+export interface ItemWithExpanded extends Item {
+  isExpanded?: boolean;
+}
+
+export interface TreeTestConfig {
+  tree: Item[];
+  tasks: {
+    id: string;
+    description: string;
+    link: string;
+  }[];
+  requireConfidenceRating: boolean;
+  preview: boolean;
+  participantId?: string;
+  studyId: string;
+}

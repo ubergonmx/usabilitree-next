@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, Router } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,32 +12,20 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-
-interface Item {
-  name: string;
-  link?: string;
-  children?: Item[];
-}
+import { storeTreeTaskResult } from "@/lib/treetest/actions";
+import { useRouter } from "next/navigation";
+import { sanitizeTreeTestLink } from "@/lib/utils";
+import { Item, ItemWithExpanded, TreeTestConfig } from "@/lib/types/tree-test";
 
 const confidenceLevels = [
-  { value: "strongly-disagree", label: "Strongly Disagree" },
-  { value: "moderately-disagree", label: "Moderately Disagree" },
-  { value: "slightly-disagree", label: "Slightly Disagree" },
-  { value: "neutral", label: "Neutral" },
-  { value: "slightly-agree", label: "Slightly Agree" },
-  { value: "moderately-agree", label: "Moderately Agree" },
-  { value: "strongly-agree", label: "Strongly Agree" },
+  { value: 1, label: "Strongly Disagree" },
+  { value: 2, label: "Moderately Disagree" },
+  { value: 3, label: "Slightly Disagree" },
+  { value: 4, label: "Neutral" },
+  { value: 5, label: "Slightly Agree" },
+  { value: 6, label: "Moderately Agree" },
+  { value: 7, label: "Strongly Agree" },
 ];
-
-interface TreeTestConfig {
-  tree: Item[];
-  tasks: {
-    id: string;
-    description: string;
-    link: string;
-  }[];
-  requireConfidenceRating: boolean;
-}
 
 interface TreeTestProps {
   config: TreeTestConfig;
@@ -49,82 +37,144 @@ const Navigation = ({
   resetKey,
 }: {
   items: Item[];
-  onSelect: (link: string) => void;
+  onSelect: (link: string, path: string) => void;
   resetKey: number;
 }) => {
-  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
+  const [treeState, setTreeState] = useState<Item[]>([]);
   const [selectedLink, setSelectedLink] = useState<string>();
+  const [pathTaken, setPathTaken] = useState<string>("");
 
   useEffect(() => {
-    const initialExpanded: { [key: string]: boolean } = {};
-    items.forEach((item) => {
-      if (item.name === "Home" && (!item.children || item.children.length === 0)) {
-        initialExpanded[item.name] = true;
-      }
-    });
-    setExpanded(initialExpanded);
+    // Initialize tree with expansion states
+    const initializeTree = (items: Item[]): ItemWithExpanded[] => {
+      return items.map((item) => ({
+        ...item,
+        isExpanded: item.name === "Home",
+        children: item.children ? initializeTree(item.children) : undefined,
+      }));
+    };
+
+    setTreeState(initializeTree(items));
     setSelectedLink("");
+    setPathTaken(items.some((item) => item.name === "Home") ? "/home" : "");
   }, [resetKey, items]);
 
-  const toggleExpand = (name: string | number) => {
-    setExpanded((prev) => ({ ...prev, [name]: !prev[name] }));
+  const updatePathTaken = (prev: string, name: string) => {
+    const sanitizedPath = sanitizeTreeTestLink(name);
+    const newPath = `${prev}/${sanitizedPath}`;
+    return prev.endsWith(`/${sanitizedPath}`) ? prev : newPath;
   };
 
-  const handleLinkClick = (link: string) => {
+  const toggleExpand = (path: string[]) => {
+    setSelectedLink(undefined);
+
+    setTreeState((prevState) => {
+      const newState = [...prevState];
+
+      // Helper function to update expansion states
+      const updateExpansion = (items: Item[], currentPath: string[]): Item[] => {
+        return items.map((item: ItemWithExpanded) => {
+          if (!item.children) return item;
+
+          const isTargetPath = currentPath[0] === item.name;
+
+          if (isTargetPath) {
+            // If this is the target item
+            if (currentPath.length === 1) {
+              // Close all other branches at this level
+              const otherItemsClosed = items.map((otherItem) => ({
+                ...otherItem,
+                isExpanded: otherItem.name === item.name ? !item.isExpanded : false,
+                children: otherItem.children ? updateExpansion(otherItem.children, []) : undefined,
+              }));
+              return otherItemsClosed.find((i) => i.name === item.name)!;
+            } else {
+              // Continue down the path
+              return {
+                ...item,
+                isExpanded: true,
+                children: updateExpansion(item.children, currentPath.slice(1)),
+              };
+            }
+          }
+
+          // Close this branch if it's not in the path
+          return {
+            ...item,
+            isExpanded: false,
+            children: item.children ? updateExpansion(item.children, []) : undefined,
+          };
+        });
+      };
+
+      return updateExpansion(newState, path);
+    });
+
+    setPathTaken((prev) => updatePathTaken(prev, path[path.length - 1]));
+  };
+
+  const handleLinkClick = (link: string, name: string) => {
     setSelectedLink(link);
+    setPathTaken((prev) => updatePathTaken(prev, name));
   };
 
-  const renderItems = (items: Item[], level = 0) => {
-    return items.map((item) => (
-      <div key={item.name} className={`${level > 0 ? "ml-4" : ""} mb-2`}>
-        {item.children ? (
-          <div>
-            <button
-              onClick={() => toggleExpand(item.name)}
-              className="flex w-full items-center justify-between bg-gray-200 px-3 py-2 text-sm transition-colors duration-200 hover:bg-gray-300"
-              aria-expanded={expanded[item.name]}
-            >
-              <span>{item.name}</span>
-              {expanded[item.name] ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </button>
-            <div
-              className={`overflow-hidden transition-all duration-300 ease-in-out ${expanded[item.name] ? "mt-2 max-h-[1000px]" : "max-h-0"}`}
-            >
-              {renderItems(item.children, level + 1)}
-            </div>
-          </div>
-        ) : (
-          <div
-            className={`my-1 flex items-center justify-between p-2 transition-colors duration-200 ${
-              item.link === selectedLink ? "bg-[#e6f3d8]" : "bg-gray-200 hover:bg-gray-300"
-            }`}
-            onClick={() => handleLinkClick(item.link ?? "")}
-          >
-            <span className="text-sm">{item.name}</span>
-            {item.link === selectedLink && (
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-[#72FFA4] text-black hover:bg-[#00D9C2]"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelect(item.link ?? "");
-                }}
+  const renderItems = (items: ItemWithExpanded[], parentPath: string[] = []) => {
+    return items.map((item) => {
+      const currentPath = [...parentPath, item.name];
+
+      return (
+        <div key={item.name} className={`${parentPath.length ? "ml-4" : ""} mb-2`}>
+          {item.children ? (
+            <div>
+              <button
+                onClick={() => toggleExpand(currentPath)}
+                className="flex w-full items-center justify-between bg-gray-200 px-3 py-2 text-sm transition-colors duration-200 hover:bg-gray-300"
+                aria-expanded={item.isExpanded}
               >
-                I&apos;d find it here
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-    ));
+                <span>{item.name}</span>
+                {item.isExpanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  item.isExpanded ? "mt-2 max-h-[1000px]" : "max-h-0"
+                }`}
+              >
+                {renderItems(item.children, currentPath)}
+              </div>
+            </div>
+          ) : (
+            <div
+              className={`my-1 flex items-center justify-between p-2 transition-colors duration-200 ${
+                item.link === selectedLink ? "bg-[#e6f3d8]" : "bg-gray-200 hover:bg-gray-300"
+              }`}
+              onClick={() => handleLinkClick(item.link ?? "", item.name)}
+            >
+              <span className="text-sm">{item.name}</span>
+              {item.link === selectedLink && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-[#72FFA4] text-black hover:bg-[#00D9C2]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(item.link ?? "", pathTaken);
+                  }}
+                >
+                  I&apos;d find it here
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
-  return <div className="mt-4">{renderItems(items)}</div>;
+  return <div className="mt-4">{renderItems(treeState)}</div>;
 };
 
 interface Result {
@@ -144,38 +194,67 @@ export function TreeTestComponent({ config }: TreeTestProps) {
   const [showConfidenceModal, setShowConfidenceModal] = useState(false);
   const [selectedLink, setSelectedLink] = useState<string>();
   const [confidenceLevel, setConfidenceLevel] = useState<string>();
+  const [pathTaken, setPathTaken] = useState<string>("");
+  const router = useRouter();
 
   const startTest = () => {
     setStarted(true);
     setStartTime(Date.now());
   };
 
-  const handleSelection = (link: string) => {
+  const handleSelection = (link: string, path: string) => {
     setSelectedLink(link);
+    setPathTaken(path);
     setShowConfidenceModal(true);
   };
 
-  const handleConfidenceSubmit = () => {
-    const endTime = Date.now();
-    const duration = (endTime - (startTime ?? endTime)) / 1000; // Convert to seconds
-    console.log(`Link: ${selectedLink}, Confidence: ${confidenceLevel}`);
+  const handleConfidenceSubmit = async () => {
+    if (!selectedLink) return;
+
+    if (!config.preview && config.participantId) {
+      const endTime = Date.now();
+      const duration = (endTime - startTime!) / 1000;
+
+      await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
+        successful: selectedLink === config.tasks[currentTask].link,
+        directPathTaken: pathTaken === config.tasks[currentTask].link,
+        completionTimeSeconds: duration,
+        confidenceRating: confidenceLevel ? parseInt(confidenceLevel) : undefined,
+        pathTaken: pathTaken,
+        skipped: false,
+      });
+    }
 
     setResults((prev) => [
       ...prev,
       {
         taskId: config.tasks[currentTask].id,
         selectedLink,
-        duration,
+        duration: (Date.now() - (startTime ?? Date.now())) / 1000,
         confidenceLevel,
       },
     ]);
 
     setShowConfidenceModal(false);
-    setConfidenceLevel("");
+    setConfidenceLevel(undefined);
+    setSelectedLink(undefined);
     moveToNextTask();
   };
 
-  const skipTask = () => {
+  const skipTask = async () => {
+    if (!config.preview && config.participantId) {
+      const endTime = Date.now();
+      const duration = (endTime - startTime!) / 1000; // Convert to seconds
+
+      await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
+        successful: false,
+        directPathTaken: false,
+        completionTimeSeconds: duration,
+        pathTaken: "",
+        skipped: true,
+      });
+    }
+
     setResults((prev) => [...prev, { taskId: config.tasks[currentTask].id, skipped: true }]);
     moveToNextTask();
   };
@@ -186,7 +265,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       setStarted(false);
       setResetKey((prev) => prev + 1);
     } else {
-      setStarted(false);
+      router.push("completed");
     }
   };
 
@@ -202,7 +281,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="ml-2 sm:ml-0">
             <h2 className="text-lg font-semibold">
-              Task {currentTask + 1} of {config.tasks.length}
+              Task {currentTask + 1} of {config.tasks.length} {config.preview ? "(Preview)" : ""}
             </h2>
             <p className="mt-2">{config.tasks[currentTask].description}</p>
           </div>
@@ -219,9 +298,11 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       </div>
       <div className="mt-32 p-4">
         {!started ? (
-          <Button onClick={startTest} className="mb-4 text-center">
-            Start Task {currentTask + 1}
-          </Button>
+          <div className="flex justify-center">
+            <Button onClick={startTest} className="mb-4 text-center">
+              Start Task {currentTask + 1}
+            </Button>
+          </div>
         ) : (
           <Navigation items={config.tree} onSelect={handleSelection} resetKey={resetKey} />
         )}
@@ -248,14 +329,18 @@ export function TreeTestComponent({ config }: TreeTestProps) {
           >
             {confidenceLevels.map((level, index) => (
               <div key={level.value} className="flex flex-col items-center">
-                <RadioGroupItem value={level.value} id={level.value} className="sr-only" />
+                <RadioGroupItem
+                  value={level.value.toString()}
+                  id={level.value.toString()}
+                  className="sr-only"
+                />
                 <Label
-                  htmlFor={level.value}
+                  htmlFor={level.value.toString()}
                   className="flex cursor-pointer flex-col items-center space-y-2"
                 >
                   <div
                     className={`h-4 w-4 rounded-full border ${
-                      confidenceLevel === level.value
+                      confidenceLevel === level.value.toString()
                         ? "border-primary bg-primary"
                         : "border-gray-300"
                     }`}

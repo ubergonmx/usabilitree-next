@@ -3,7 +3,7 @@ import { loadTestConfig } from "@/lib/treetest/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default async function TreeTestPage({ params }: { params: { id: string } }) {
-  const config = await loadTestConfig(params.id);
+  const config = await loadTestConfig(params.id, true);
 
   return (
     <div>

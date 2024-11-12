@@ -33,7 +33,7 @@ import { GeneralTab } from "./general-tab";
 import { TreeTab } from "./tree-tab";
 import { TasksTab } from "./tasks-tab";
 import { MessagesTab } from "./messages-tab";
-import { StudyFormData } from "./types";
+import { StudyFormData } from "@/lib/types/tree-test";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -63,6 +63,7 @@ export default function SetupTabs({ params }: SetupTabsProps) {
     },
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
 
   // Load initial data
   useEffect(() => {
@@ -84,6 +85,20 @@ export default function SetupTabs({ params }: SetupTabsProps) {
       toast.error("Failed to save study");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleLaunch = async () => {
+    setIsLaunching(true);
+    try {
+      await updateStudyStatus(params.id, "active");
+      toast.success("Study launched successfully");
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Failed to launch study:", error);
+      toast.error("Failed to launch study");
+    } finally {
+      setIsLaunching(false);
     }
   };
 
@@ -131,12 +146,14 @@ export default function SetupTabs({ params }: SetupTabsProps) {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={async () => {
-                    await updateStudyStatus(params.id, "active");
-                  }}
-                >
-                  Launch Study
+                <AlertDialogAction onClick={handleLaunch} disabled={isLaunching} className="gap-2">
+                  {isLaunching ? (
+                    <>Launching...</>
+                  ) : (
+                    <>
+                      <RocketIcon className="h-4 w-4" /> Launch Study
+                    </>
+                  )}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -147,7 +164,7 @@ export default function SetupTabs({ params }: SetupTabsProps) {
             size="sm"
             className="gap-2"
             onClick={() => {
-              router.push(`/treetest/preview/${params.id}`);
+              window.open(`/treetest/preview/${params.id}`, "_blank");
             }}
           >
             <EyeOpenIcon className="h-4 w-4" /> Preview

@@ -23,3 +23,11 @@ export function formatDate(
 export function absoluteUrl(path: string) {
   return new URL(path, env.NEXT_PUBLIC_APP_URL).href;
 }
+
+export function sanitizeTreeTestLink(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/ñ/g, "n")
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
