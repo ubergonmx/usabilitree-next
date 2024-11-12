@@ -74,6 +74,8 @@ GoogleLogoIcon.displayName = "GoogleLogoIcon";
 
 export { AnimatedSpinner, CreditCard, GoogleLogoIcon };
 
+export { SaveIcon, WorkflowIcon, ChevronDown, ChevronRight, ArrowRight } from "lucide-react";
+
 export {
   EyeOpenIcon,
   EyeNoneIcon as EyeCloseIcon,
