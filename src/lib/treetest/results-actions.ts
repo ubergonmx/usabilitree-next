@@ -26,14 +26,18 @@ export async function getStudyOverviewStats(studyId: string): Promise<StudyOverv
     // Calculate median completion time
     const completionTimes = await db
       .select({
-        timeTaken: sql<number>`(${participants.completedAt} - ${participants.startedAt}) / 1000`, // Convert to seconds
+        timeTaken: sql<number>`${participants.completedAt} - ${participants.startedAt}`,
       })
       .from(participants)
       .where(and(eq(participants.studyId, studyId), sql`${participants.completedAt} is not null`));
 
+    console.log("completionTimes", completionTimes);
+
     const sortedTimes = completionTimes.map((t) => t.timeTaken).sort((a, b) => a - b);
 
     const medianTime = sortedTimes.length > 0 ? sortedTimes[Math.floor(sortedTimes.length / 2)] : 0;
+
+    console.log("medianTime", medianTime);
 
     // Get task success and directness rates
     const [taskStats] = await db
@@ -46,6 +50,8 @@ export async function getStudyOverviewStats(studyId: string): Promise<StudyOverv
         treeTasks,
         and(eq(treeTasks.id, treeTaskResults.taskId), eq(treeTasks.studyId, studyId))
       );
+
+    console.log("taskStats", taskStats);
 
     return {
       totalParticipants: participantCounts.total,
