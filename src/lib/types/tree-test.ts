@@ -46,3 +46,15 @@ export interface TreeTestConfig {
   participantId?: string;
   studyId: string;
 }
+
+export interface TreeTestOverviewStats {
+  totalParticipants: number;
+  completedParticipants: number;
+  abandonedParticipants: number;
+  completionRate: number;
+  medianCompletionTime: number;
+  shortestCompletionTime: number;
+  longestCompletionTime: number;
+  successRate: number;
+  directnessRate: number;
+}

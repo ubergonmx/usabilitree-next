@@ -3,16 +3,9 @@
 import { db } from "@/db";
 import { participants, studyCollaborators, treeTaskResults, treeTasks } from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
+import { TreeTestOverviewStats } from "../types/tree-test";
 
-export interface StudyOverviewStats {
-  totalParticipants: number;
-  completedParticipants: number;
-  medianCompletionTime: number;
-  successRate: number;
-  directnessRate: number;
-}
-
-export async function getStudyOverviewStats(studyId: string): Promise<StudyOverviewStats> {
+export async function getStudyOverviewStats(studyId: string): Promise<TreeTestOverviewStats> {
   try {
     // Get participant counts
     const [participantCounts] = await db
@@ -23,7 +16,7 @@ export async function getStudyOverviewStats(studyId: string): Promise<StudyOverv
       .from(participants)
       .where(eq(participants.studyId, studyId));
 
-    // Calculate median completion time
+    // Calculate completion times
     const completionTimes = await db
       .select({
         timeTaken: sql<number>`${participants.completedAt} - ${participants.startedAt}`,
@@ -31,13 +24,8 @@ export async function getStudyOverviewStats(studyId: string): Promise<StudyOverv
       .from(participants)
       .where(and(eq(participants.studyId, studyId), sql`${participants.completedAt} is not null`));
 
-    console.log("completionTimes", completionTimes);
-
-    const sortedTimes = completionTimes.map((t) => t.timeTaken).sort((a, b) => a - b);
-
-    const medianTime = sortedTimes.length > 0 ? sortedTimes[Math.floor(sortedTimes.length / 2)] : 0;
-
-    console.log("medianTime", medianTime);
+    const times = completionTimes.map((t) => t.timeTaken).sort((a, b) => a - b);
+    const medianIndex = Math.floor(times.length / 2);
 
     // Get task success and directness rates
     const [taskStats] = await db
@@ -51,12 +39,16 @@ export async function getStudyOverviewStats(studyId: string): Promise<StudyOverv
         and(eq(treeTasks.id, treeTaskResults.taskId), eq(treeTasks.studyId, studyId))
       );
 
-    console.log("taskStats", taskStats);
+    const completionRate = (participantCounts.completed / participantCounts.total) * 100;
 
     return {
       totalParticipants: participantCounts.total,
       completedParticipants: participantCounts.completed,
-      medianCompletionTime: Math.round(medianTime),
+      abandonedParticipants: participantCounts.total - participantCounts.completed,
+      completionRate: Math.round(completionRate),
+      medianCompletionTime: times[medianIndex] || 0,
+      shortestCompletionTime: times[0] || 0,
+      longestCompletionTime: times[times.length - 1] || 0,
       successRate: Math.round(taskStats?.successRate || 0),
       directnessRate: Math.round(taskStats?.directnessRate || 0),
     };
