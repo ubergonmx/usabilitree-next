@@ -57,7 +57,7 @@ export async function createStudy(type: "tree_test" | "card_sort") {
   }
 }
 
-export async function updateStudyStatus(id: string, status: "draft" | "active") {
+export async function updateStudyStatus(id: string, status: "draft" | "active" | "completed") {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error("Unauthorized");
