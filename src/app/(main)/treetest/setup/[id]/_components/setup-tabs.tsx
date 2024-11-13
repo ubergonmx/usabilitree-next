@@ -64,6 +64,7 @@ export default function SetupTabs({ params }: SetupTabsProps) {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Load initial data
   useEffect(() => {
@@ -75,6 +76,36 @@ export default function SetupTabs({ params }: SetupTabsProps) {
       });
   }, [params.id]);
 
+  // Check for unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+      }
+    };
+
+    if (hasUnsavedChanges) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // Detect unsaved changes
+  useEffect(() => {
+    setHasUnsavedChanges(true);
+  }, [formData]);
+
+  const canLaunchOrPreview = () => {
+    return (
+      formData.general.title?.trim() &&
+      formData.tree.parsed.length > 0 &&
+      formData.tasks.items.some((task) => task.description?.trim() && task.answer?.trim())
+    );
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -85,10 +116,16 @@ export default function SetupTabs({ params }: SetupTabsProps) {
       toast.error("Failed to save study");
     } finally {
       setIsSaving(false);
+      setHasUnsavedChanges(false);
     }
   };
 
   const handleLaunch = async () => {
+    if (!canLaunchOrPreview()) {
+      toast.error("Please add a title, tree structure, and at least one task before launching");
+      return;
+    }
+
     setIsLaunching(true);
     try {
       await updateStudyStatus(params.id, "active");
@@ -130,10 +167,22 @@ export default function SetupTabs({ params }: SetupTabsProps) {
           >
             <SaveIcon className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save"}
+            {hasUnsavedChanges && (
+              <span className="relative flex h-3 w-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-theme"></span>
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-theme"></span>
+              </span>
+            )}
           </Button>
 
           <AlertDialog>
-            <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={!canLaunchOrPreview()}
+              asChild
+            >
               <AlertDialogTrigger>
                 <RocketIcon className="h-4 w-4" /> Launch
               </AlertDialogTrigger>
@@ -166,8 +215,15 @@ export default function SetupTabs({ params }: SetupTabsProps) {
             size="sm"
             className="gap-2"
             onClick={() => {
+              if (!canLaunchOrPreview()) {
+                toast.error(
+                  "Please add a title, tree structure, and at least one task before previewing"
+                );
+                return;
+              }
               window.open(`/treetest/preview/${params.id}`, "_blank");
             }}
+            disabled={!canLaunchOrPreview()}
           >
             <EyeOpenIcon className="h-4 w-4" /> Preview
           </Button>

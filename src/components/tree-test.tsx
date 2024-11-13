@@ -218,10 +218,11 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       // Check if the selected link matches any of the correct answers
       const correctAnswers = config.tasks[currentTask].link.split(",").map((a) => a.trim());
       const isSuccessful = correctAnswers.includes(selectedLink);
+      const hasDirectPathtaken = correctAnswers.includes(pathTaken);
 
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
         successful: isSuccessful,
-        directPathTaken: pathTaken === selectedLink, // Keep original path comparison
+        directPathTaken: hasDirectPathtaken,
         completionTimeSeconds: duration,
         confidenceRating: confidenceLevel ? parseInt(confidenceLevel) : undefined,
         pathTaken: pathTaken,
@@ -248,13 +249,13 @@ export function TreeTestComponent({ config }: TreeTestProps) {
   const skipTask = async () => {
     if (!config.preview && config.participantId) {
       const endTime = Date.now();
-      const duration = (endTime - startTime!) / 1000; // Convert to seconds
+      const duration = (endTime - startTime!) / 1000;
 
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
         successful: false,
         directPathTaken: false,
         completionTimeSeconds: duration,
-        pathTaken: "",
+        pathTaken: pathTaken,
         skipped: true,
       });
     }
@@ -279,90 +280,117 @@ export function TreeTestComponent({ config }: TreeTestProps) {
     }
   }, [started, results, currentTask, config.tasks.length]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+
+    if (config.tree && config.tree.length > 0 && config.tasks && config.tasks.length > 0) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [config.tree, config.tasks]);
+
   return (
     <div className="mx-auto min-h-screen w-full max-w-3xl bg-gray-100">
-      <div className="fixed left-0 right-0 top-0 z-10 bg-white pt-4">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <div className="ml-2 sm:ml-0">
-            <h2 className="text-lg font-semibold">
-              Task {currentTask + 1} of {config.tasks.length} {config.preview ? "(Preview)" : ""}
-            </h2>
-            <p className="mt-2">{config.tasks[currentTask].description}</p>
-          </div>
-          {started && (
-            <button
-              onClick={skipTask}
-              className="mr-2 text-blue-600 underline hover:text-blue-800 sm:mr-0"
-            >
-              Skip task
-            </button>
-          )}
+      {!config.tree || config.tree.length === 0 || !config.tasks || config.tasks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center pt-20">
+          <h2 className="text-lg font-semibold">No Tree Structure or Tasks Found</h2>
+          <p className="mt-2 text-center">
+            It seems that there are no trees or tasks available for this study. Please go back to
+            the setup and ensure that you have added a tree structure and at least one task.
+          </p>
         </div>
-        <div className="mt-4 h-1 bg-theme"></div>
-      </div>
-      <div className="mt-32 p-4">
-        {!started ? (
-          <div className="flex justify-center">
-            <Button onClick={startTest} className="mb-4 text-center">
-              Start Task {currentTask + 1}
-            </Button>
-          </div>
-        ) : (
-          <Navigation items={config.tree} onSelect={handleSelection} resetKey={resetKey} />
-        )}
-        {!started && currentTask === config.tasks.length && (
-          <div className="mt-4">
-            <h2 className="mb-2 text-lg font-semibold">Test Completed</h2>
-            <p>Check the console for results.</p>
-          </div>
-        )}
-      </div>
-      <Dialog
-        open={showConfidenceModal && config.requireConfidenceRating}
-        onOpenChange={setShowConfidenceModal}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>How confident are you with your answer?</DialogTitle>
-            <DialogDescription>Please select your level of confidence:</DialogDescription>
-          </DialogHeader>
-          <RadioGroup
-            value={confidenceLevel}
-            onValueChange={setConfidenceLevel}
-            className="grid grid-cols-7 gap-2 pt-4"
-          >
-            {confidenceLevels.map((level, index) => (
-              <div key={level.value} className="flex flex-col items-center">
-                <RadioGroupItem
-                  value={level.value.toString()}
-                  id={level.value.toString()}
-                  className="sr-only"
-                />
-                <Label
-                  htmlFor={level.value.toString()}
-                  className="flex cursor-pointer flex-col items-center space-y-2"
-                >
-                  <div
-                    className={`h-4 w-4 rounded-full border ${
-                      confidenceLevel === level.value.toString()
-                        ? "border-primary bg-primary"
-                        : "border-gray-300"
-                    }`}
-                  />
-                  <span className="text-center text-xs">{index + 1}</span>
-                </Label>
+      ) : (
+        <>
+          <div className="fixed left-0 right-0 top-0 z-10 bg-white pt-4">
+            <div className="mx-auto flex max-w-3xl items-center justify-between">
+              <div className="ml-2 sm:ml-0">
+                <h2 className="text-lg font-semibold">
+                  Task {currentTask + 1} of {config.tasks.length}{" "}
+                  {config.preview ? "(Preview)" : ""}
+                </h2>
+                <p className="mt-2">{config.tasks[currentTask].description}</p>
               </div>
-            ))}
-          </RadioGroup>
-          <div className="mt-2 flex justify-between text-xs">
-            <span>{confidenceLevels[0].label}</span>
-            <span>{confidenceLevels[6].label}</span>
+              {started && (
+                <button
+                  onClick={skipTask}
+                  className="mr-2 text-blue-600 underline hover:text-blue-800 sm:mr-0"
+                >
+                  Skip task
+                </button>
+              )}
+            </div>
+            <div className="mt-4 h-1 bg-theme"></div>
           </div>
-          <Button onClick={handleConfidenceSubmit} disabled={!confidenceLevel} className="mt-4">
-            Submit and Continue
-          </Button>
-        </DialogContent>
-      </Dialog>
+          <div className="mt-32 p-4">
+            {!started ? (
+              <div className="flex justify-center">
+                <Button onClick={startTest} className="mb-4 text-center">
+                  Start Task {currentTask + 1}
+                </Button>
+              </div>
+            ) : (
+              <Navigation items={config.tree} onSelect={handleSelection} resetKey={resetKey} />
+            )}
+            {!started && currentTask === config.tasks.length && (
+              <div className="mt-4">
+                <h2 className="mb-2 text-lg font-semibold">Test Completed</h2>
+                <p>Check the console for results.</p>
+              </div>
+            )}
+          </div>
+          <Dialog
+            open={showConfidenceModal && config.requireConfidenceRating}
+            onOpenChange={setShowConfidenceModal}
+          >
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>How confident are you with your answer?</DialogTitle>
+                <DialogDescription>Please select your level of confidence:</DialogDescription>
+              </DialogHeader>
+              <RadioGroup
+                value={confidenceLevel}
+                onValueChange={setConfidenceLevel}
+                className="grid grid-cols-7 gap-2 pt-4"
+              >
+                {confidenceLevels.map((level, index) => (
+                  <div key={level.value} className="flex flex-col items-center">
+                    <RadioGroupItem
+                      value={level.value.toString()}
+                      id={level.value.toString()}
+                      className="sr-only"
+                    />
+                    <Label
+                      htmlFor={level.value.toString()}
+                      className="flex cursor-pointer flex-col items-center space-y-2"
+                    >
+                      <div
+                        className={`h-4 w-4 rounded-full border ${
+                          confidenceLevel === level.value.toString()
+                            ? "border-primary bg-primary"
+                            : "border-gray-300"
+                        }`}
+                      />
+                      <span className="text-center text-xs">{index + 1}</span>
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+              <div className="mt-2 flex justify-between text-xs">
+                <span>{confidenceLevels[0].label}</span>
+                <span>{confidenceLevels[6].label}</span>
+              </div>
+              <Button onClick={handleConfidenceSubmit} disabled={!confidenceLevel} className="mt-4">
+                Submit and Continue
+              </Button>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 }
