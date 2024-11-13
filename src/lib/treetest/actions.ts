@@ -341,3 +341,18 @@ export async function updateParticipantCompletion(participantId: string) {
     throw new Error("Failed to update participant completion time");
   }
 }
+
+export async function getStudyTitle(studyId: string): Promise<string> {
+  try {
+    const study = await db
+      .select({ title: studies.title })
+      .from(studies)
+      .where(eq(studies.id, studyId))
+      .get();
+
+    return study?.title || "Study Results";
+  } catch (error) {
+    console.error("Failed to get study title:", error);
+    return "Study Results";
+  }
+}

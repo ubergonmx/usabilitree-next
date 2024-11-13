@@ -83,6 +83,7 @@ export {
   UsersIcon,
   CircleCheckBigIcon,
   CircleCheckIcon,
+  FlagIcon,
 } from "lucide-react";
 
 export {
@@ -119,4 +120,5 @@ export {
   Share1Icon as ShareIcon,
   TimerIcon,
   TargetIcon,
+  CopyIcon,
 } from "@radix-ui/react-icons";

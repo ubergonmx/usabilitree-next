@@ -92,8 +92,10 @@ export default function SetupTabs({ params }: SetupTabsProps) {
     setIsLaunching(true);
     try {
       await updateStudyStatus(params.id, "active");
-      toast.success("Study launched successfully");
-      router.push("/dashboard");
+      const link = `${window.location.origin}/treetest/${params.id}`;
+      await navigator.clipboard.writeText(link);
+      toast.success("Study launched successfully and link copied to clipboard");
+      router.push(`/treetest/results/${params.id}`);
     } catch (error) {
       console.error("Failed to launch study:", error);
       toast.error("Failed to launch study");
