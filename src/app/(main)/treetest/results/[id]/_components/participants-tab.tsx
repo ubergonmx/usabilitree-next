@@ -110,7 +110,9 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
                   <TableCell>
                     {participant.completedAt
                       ? `${Math.round(
-                          (participant.completedAt - participant.startedAt) / 1000 / 60
+                          (participant.completedAt.getTime() - participant.startedAt.getTime()) /
+                            1000 /
+                            60
                         )} min`
                       : "-"}
                   </TableCell>
