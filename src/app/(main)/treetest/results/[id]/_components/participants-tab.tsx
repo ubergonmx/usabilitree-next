@@ -71,7 +71,7 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
         </TableHeader>
         <TableBody>
           {participants
-            .sort((a, b) => a.startedAt - b.startedAt)
+            .sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())
             .map((participant, index) => {
               const taskStats = participant.taskResults.reduce(
                 (acc, result) => {
