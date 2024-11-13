@@ -104,3 +104,84 @@ export async function removeStudyCollaborator(collaboratorId: number) {
     throw new Error("Failed to remove collaborator");
   }
 }
+
+export interface TaskStats {
+  id: string;
+  description: string;
+  expectedAnswer: string;
+  stats: {
+    success: {
+      rate: number;
+      margin: number;
+    };
+    directness: {
+      rate: number;
+      margin: number;
+    };
+    time: {
+      median: number;
+      min: number;
+      max: number;
+    };
+    score: number;
+  };
+}
+
+export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
+  try {
+    const tasks = await db
+      .select({
+        id: treeTasks.id,
+        description: treeTasks.description,
+        expectedAnswer: treeTasks.expectedAnswer,
+      })
+      .from(treeTasks)
+      .where(eq(treeTasks.studyId, studyId))
+      .orderBy(treeTasks.taskIndex);
+
+    const taskStats = await Promise.all(
+      tasks.map(async (task) => {
+        const [stats] = await db
+          .select({
+            successRate: sql<number>`avg(case when ${treeTaskResults.successful} = 1 then 100.0 else 0.0 end)`,
+            successMargin: sql<number>`sqrt(avg(case when ${treeTaskResults.successful} = 1 then 100.0 else 0.0 end) * (1 - avg(case when ${treeTaskResults.successful} = 1 then 1.0 else 0.0 end)) / count(*)) * 1.96`,
+            directnessRate: sql<number>`avg(case when ${treeTaskResults.directPathTaken} = 1 then 100.0 else 0.0 end)`,
+            directnessMargin: sql<number>`sqrt(avg(case when ${treeTaskResults.directPathTaken} = 1 then 100.0 else 0.0 end) * (1 - avg(case when ${treeTaskResults.directPathTaken} = 1 then 1.0 else 0.0 end)) / count(*)) * 1.96`,
+            medianTime: sql<number>`avg(${treeTaskResults.completionTimeSeconds})`,
+            minTime: sql<number>`min(${treeTaskResults.completionTimeSeconds})`,
+            maxTime: sql<number>`max(${treeTaskResults.completionTimeSeconds})`,
+          })
+          .from(treeTaskResults)
+          .where(eq(treeTaskResults.taskId, task.id));
+
+        // Calculate overall score (weighted average of success and directness)
+        const score = Math.round(stats.successRate * 0.7 + stats.directnessRate * 0.3);
+
+        return {
+          ...task,
+          stats: {
+            success: {
+              rate: Math.round(stats.successRate || 0),
+              margin: Math.round(stats.successMargin || 0),
+            },
+            directness: {
+              rate: Math.round(stats.directnessRate || 0),
+              margin: Math.round(stats.directnessMargin || 0),
+            },
+            time: {
+              median: Math.round(stats.medianTime || 0),
+              min: Math.round(stats.minTime || 0),
+              max: Math.round(stats.maxTime || 0),
+            },
+            score,
+          },
+        };
+      })
+    );
+
+    return taskStats;
+  } catch (error) {
+    console.error("Failed to get tasks stats:", error);
+    throw new Error("Failed to get tasks stats");
+  }
+}
