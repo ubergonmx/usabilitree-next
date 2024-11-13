@@ -32,6 +32,7 @@ import { getStudyTitle, updateStudyStatus, deleteStudy } from "@/lib/treetest/ac
 import { OverviewTab } from "./overview-tab";
 import { TasksTab } from "./tasks-tab";
 import { SharingTab } from "./sharing-tab";
+import { ParticipantsTab } from "./participants-tab";
 
 interface ResultTabsProps {
   params: {
@@ -190,9 +191,9 @@ export default function ResultTabs({ params, userEmail, isOwner }: ResultTabsPro
           <OverviewTab studyId={params.id} />
         </TabsContent>
 
-        {/* <TabsContent value="participants">
+        <TabsContent value="participants">
           <ParticipantsTab studyId={params.id} />
-        </TabsContent> */}
+        </TabsContent>
 
         <TabsContent value="tasks">
           <TasksTab studyId={params.id} />

@@ -124,6 +124,20 @@ export interface TaskStats {
       max: number;
     };
     score: number;
+    breakdown: {
+      directSuccess: number;
+      indirectSuccess: number;
+      directFail: number;
+      indirectFail: number;
+      directSkip: number;
+      indirectSkip: number;
+      total: number;
+    };
+    confidenceRatings: {
+      value: number;
+      count: number;
+      percentage: number;
+    }[];
   };
 }
 
@@ -150,12 +164,36 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
             medianTime: sql<number>`avg(${treeTaskResults.completionTimeSeconds})`,
             minTime: sql<number>`min(${treeTaskResults.completionTimeSeconds})`,
             maxTime: sql<number>`max(${treeTaskResults.completionTimeSeconds})`,
+            directSuccess: sql<number>`sum(case when ${treeTaskResults.successful} = 1 and ${treeTaskResults.directPathTaken} = 1 and ${treeTaskResults.skipped} = 0 then 1 else 0 end)`,
+            indirectSuccess: sql<number>`sum(case when ${treeTaskResults.successful} = 1 and ${treeTaskResults.directPathTaken} = 0 and ${treeTaskResults.skipped} = 0 then 1 else 0 end)`,
+            directFail: sql<number>`sum(case when ${treeTaskResults.successful} = 0 and ${treeTaskResults.directPathTaken} = 1 and ${treeTaskResults.skipped} = 0 then 1 else 0 end)`,
+            indirectFail: sql<number>`sum(case when ${treeTaskResults.successful} = 0 and ${treeTaskResults.directPathTaken} = 0 and ${treeTaskResults.skipped} = 0 then 1 else 0 end)`,
+            directSkip: sql<number>`sum(case when ${treeTaskResults.skipped} = 1 and ${treeTaskResults.directPathTaken} = 1 then 1 else 0 end)`,
+            indirectSkip: sql<number>`sum(case when ${treeTaskResults.skipped} = 1 and ${treeTaskResults.directPathTaken} = 0 then 1 else 0 end)`,
+            total: sql<number>`count(*)`,
           })
           .from(treeTaskResults)
           .where(eq(treeTaskResults.taskId, task.id));
 
         // Calculate overall score (weighted average of success and directness)
         const score = Math.round(stats.successRate * 0.7 + stats.directnessRate * 0.3);
+
+        // Get confidence ratings distribution
+        const confidenceRatings = await db
+          .select({
+            value: treeTaskResults.confidenceRating,
+            count: sql<number>`count(*)`,
+          })
+          .from(treeTaskResults)
+          .where(
+            and(
+              eq(treeTaskResults.taskId, task.id),
+              sql`${treeTaskResults.confidenceRating} is not null`
+            )
+          )
+          .groupBy(treeTaskResults.confidenceRating);
+
+        const totalRatings = confidenceRatings.reduce((sum, r) => sum + Number(r.count), 0);
 
         return {
           ...task,
@@ -174,6 +212,20 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
               max: Math.round(stats.maxTime || 0),
             },
             score,
+            breakdown: {
+              directSuccess: Number(stats.directSuccess) || 0,
+              indirectSuccess: Number(stats.indirectSuccess) || 0,
+              directFail: Number(stats.directFail) || 0,
+              indirectFail: Number(stats.indirectFail) || 0,
+              directSkip: Number(stats.directSkip) || 0,
+              indirectSkip: Number(stats.indirectSkip) || 0,
+              total: Number(stats.total) || 0,
+            },
+            confidenceRatings: confidenceRatings.map((rating) => ({
+              value: Number(rating.value),
+              count: Number(rating.count),
+              percentage: Math.round((Number(rating.count) / totalRatings) * 100),
+            })),
           },
         };
       })
@@ -183,5 +235,56 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
   } catch (error) {
     console.error("Failed to get tasks stats:", error);
     throw new Error("Failed to get tasks stats");
+  }
+}
+
+export interface Participant {
+  id: string;
+  sessionId: string;
+  startedAt: Date;
+  completedAt: Date | null;
+  taskResults: {
+    successful: boolean;
+    directPathTaken: boolean;
+    completionTimeSeconds: number;
+    skipped: boolean;
+  }[];
+}
+
+export async function getParticipants(studyId: string): Promise<Participant[]> {
+  try {
+    const studyParticipants = await db
+      .select({
+        id: participants.id,
+        sessionId: participants.sessionId,
+        startedAt: participants.startedAt,
+        completedAt: participants.completedAt,
+      })
+      .from(participants)
+      .where(eq(participants.studyId, studyId));
+
+    const participantsWithResults = await Promise.all(
+      studyParticipants.map(async (participant) => {
+        const results = await db
+          .select({
+            successful: treeTaskResults.successful,
+            directPathTaken: treeTaskResults.directPathTaken,
+            completionTimeSeconds: treeTaskResults.completionTimeSeconds,
+            skipped: treeTaskResults.skipped,
+          })
+          .from(treeTaskResults)
+          .where(eq(treeTaskResults.participantId, participant.id));
+
+        return {
+          ...participant,
+          taskResults: results,
+        };
+      })
+    );
+
+    return participantsWithResults;
+  } catch (error) {
+    console.error("Failed to fetch participants:", error);
+    throw new Error("Failed to fetch participants");
   }
 }

@@ -84,6 +84,7 @@ export {
   CircleCheckBigIcon,
   CircleCheckIcon,
   FlagIcon,
+  MoreHorizontalIcon,
 } from "lucide-react";
 
 export {
@@ -121,4 +122,5 @@ export {
   TimerIcon,
   TargetIcon,
   CopyIcon,
+  CrossCircledIcon,
 } from "@radix-ui/react-icons";

@@ -36,6 +36,8 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "d3": "^7.9.0",
+    "date-fns": "^4.1.0",
     "dompurify": "^3.2.0",
     "drizzle-orm": "^0.36.1",
     "framer-motion": "^11.11.11",
@@ -46,6 +48,7 @@
     "oslo": "^1.2.1",
     "react": "^18",
     "react-dom": "^18",
+    "recharts": "^2.13.3",
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
@@ -53,6 +56,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/node": "^20",
     "@types/nprogress": "^0.2.3",
     "@types/react": "^18",
