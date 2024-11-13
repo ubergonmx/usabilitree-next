@@ -85,13 +85,16 @@ export function TasksTab({ data, onChange }: TasksTabProps) {
       return;
     }
 
-    const answerPath = task.answer.startsWith("/") ? task.answer : `/${task.answer}`;
-    const isValid = checkPathInTree(data.tree.parsed, answerPath);
+    const answerPaths = task.answer.split(",").map((path) => path.trim());
+    const validPaths = answerPaths.filter((path) => {
+      const answerPath = path.startsWith("/") ? path : `/${path}`;
+      return checkPathInTree(data.tree.parsed, answerPath);
+    });
 
-    if (isValid) {
-      toast.success("Answer path is valid!");
+    if (validPaths.length > 0) {
+      toast.success("Answer path(s) are valid!");
     } else {
-      toast.error("Answer path not found in tree structure");
+      toast.error("No valid paths found in tree structure");
     }
   };
 
@@ -127,7 +130,7 @@ export function TasksTab({ data, onChange }: TasksTabProps) {
 
           <div className="space-y-2">
             <Label htmlFor={`answer-${index}`} className="text-sm text-muted-foreground">
-              Correct Answer (path)
+              Correct Answer(s)
             </Label>
             <div className="flex items-center gap-2">
               <Popover
@@ -140,10 +143,14 @@ export function TasksTab({ data, onChange }: TasksTabProps) {
                       id={`answer-${index}`}
                       value={task.answer}
                       onChange={(e) => updateTask(index, "answer", e.target.value)}
-                      placeholder="Enter path (e.g., /home/products)"
+                      placeholder="Enter paths (e.g., /home/products, /products)"
                       className={cn(
                         "w-full",
-                        !availablePaths.includes(task.answer) && task.answer && "border-yellow-500"
+                        !task.answer
+                          .split(",")
+                          .some((path) => availablePaths.includes(path.trim())) &&
+                          task.answer &&
+                          "border-yellow-500"
                       )}
                     />
                   </div>
@@ -180,11 +187,12 @@ export function TasksTab({ data, onChange }: TasksTabProps) {
                 <CheckIcon className="h-4 w-4" /> Check Answer
               </Button>
             </div>
-            {task.answer && !availablePaths.includes(task.answer) && (
-              <p className="text-sm text-yellow-500">
-                Warning: This path is not in the tree structure
-              </p>
-            )}
+            {task.answer &&
+              !task.answer.split(",").some((path) => availablePaths.includes(path.trim())) && (
+                <p className="text-sm text-yellow-500">
+                  Warning: None of the paths are in the tree structure
+                </p>
+              )}
           </div>
         </div>
       ))}

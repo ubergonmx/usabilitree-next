@@ -82,6 +82,7 @@ export {
   ListChecksIcon as ChecklistIcon,
   UsersIcon,
   CircleCheckBigIcon,
+  CircleCheckIcon,
 } from "lucide-react";
 
 export {

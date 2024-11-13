@@ -215,9 +215,13 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       const endTime = Date.now();
       const duration = (endTime - startTime!) / 1000;
 
+      // Check if the selected link matches any of the correct answers
+      const correctAnswers = config.tasks[currentTask].link.split(",").map((a) => a.trim());
+      const isSuccessful = correctAnswers.includes(selectedLink);
+
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
-        successful: selectedLink === config.tasks[currentTask].link,
-        directPathTaken: pathTaken === config.tasks[currentTask].link,
+        successful: isSuccessful,
+        directPathTaken: pathTaken === selectedLink, // Keep original path comparison
         completionTimeSeconds: duration,
         confidenceRating: confidenceLevel ? parseInt(confidenceLevel) : undefined,
         pathTaken: pathTaken,
