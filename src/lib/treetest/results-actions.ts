@@ -122,6 +122,8 @@ export interface TaskStats {
       median: number;
       min: number;
       max: number;
+      q1: number;
+      q3: number;
     };
     score: number;
     breakdown: {
@@ -161,9 +163,44 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
             successMargin: sql<number>`sqrt(avg(case when ${treeTaskResults.successful} = 1 then 100.0 else 0.0 end) * (1 - avg(case when ${treeTaskResults.successful} = 1 then 1.0 else 0.0 end)) / count(*)) * 1.96`,
             directnessRate: sql<number>`avg(case when ${treeTaskResults.directPathTaken} = 1 then 100.0 else 0.0 end)`,
             directnessMargin: sql<number>`sqrt(avg(case when ${treeTaskResults.directPathTaken} = 1 then 100.0 else 0.0 end) * (1 - avg(case when ${treeTaskResults.directPathTaken} = 1 then 1.0 else 0.0 end)) / count(*)) * 1.96`,
-            medianTime: sql<number>`avg(${treeTaskResults.completionTimeSeconds})`,
-            minTime: sql<number>`min(${treeTaskResults.completionTimeSeconds})`,
-            maxTime: sql<number>`max(${treeTaskResults.completionTimeSeconds})`,
+            minTime: sql<number>`MIN(${treeTaskResults.completionTimeSeconds})`,
+            maxTime: sql<number>`MAX(${treeTaskResults.completionTimeSeconds})`,
+            // Median using subquery with correct column name
+            medianTime: sql<number>`(
+              SELECT AVG(completion_time_seconds)
+              FROM (
+                SELECT ${treeTaskResults.completionTimeSeconds} as completion_time_seconds
+                FROM ${treeTaskResults}
+                WHERE ${treeTaskResults.taskId} = ${task.id}
+                ORDER BY ${treeTaskResults.completionTimeSeconds}
+                LIMIT 2 - (SELECT COUNT(*) FROM ${treeTaskResults} WHERE ${treeTaskResults.taskId} = ${task.id}) % 2
+                OFFSET (SELECT (COUNT(*) - 1) / 2 FROM ${treeTaskResults} WHERE ${treeTaskResults.taskId} = ${task.id})
+              )
+            )`,
+            // Q1 using subquery with correct column name
+            q1Time: sql<number>`(
+              SELECT AVG(completion_time_seconds)
+              FROM (
+                SELECT ${treeTaskResults.completionTimeSeconds} as completion_time_seconds
+                FROM ${treeTaskResults}
+                WHERE ${treeTaskResults.taskId} = ${task.id}
+                ORDER BY ${treeTaskResults.completionTimeSeconds}
+                LIMIT 2 - (SELECT (COUNT(*) + 1) / 4 FROM ${treeTaskResults} WHERE ${treeTaskResults.taskId} = ${task.id}) % 2
+                OFFSET (SELECT ((COUNT(*) + 1) / 4) - 1 FROM ${treeTaskResults} WHERE ${treeTaskResults.taskId} = ${task.id})
+              )
+            )`,
+            // Q3 using subquery with correct column name
+            q3Time: sql<number>`(
+              SELECT AVG(completion_time_seconds)
+              FROM (
+                SELECT ${treeTaskResults.completionTimeSeconds} as completion_time_seconds
+                FROM ${treeTaskResults}
+                WHERE ${treeTaskResults.taskId} = ${task.id}
+                ORDER BY ${treeTaskResults.completionTimeSeconds}
+                LIMIT 2 - (SELECT (3 * (COUNT(*) + 1)) / 4 FROM ${treeTaskResults} WHERE ${treeTaskResults.taskId} = ${task.id}) % 2
+                OFFSET (SELECT ((3 * (COUNT(*) + 1)) / 4) - 1 FROM ${treeTaskResults} WHERE ${treeTaskResults.taskId} = ${task.id})
+              )
+            )`,
             directSuccess: sql<number>`sum(case when ${treeTaskResults.successful} = 1 and ${treeTaskResults.directPathTaken} = 1 and ${treeTaskResults.skipped} = 0 then 1 else 0 end)`,
             indirectSuccess: sql<number>`sum(case when ${treeTaskResults.successful} = 1 and ${treeTaskResults.directPathTaken} = 0 and ${treeTaskResults.skipped} = 0 then 1 else 0 end)`,
             directFail: sql<number>`sum(case when ${treeTaskResults.successful} = 0 and ${treeTaskResults.directPathTaken} = 1 and ${treeTaskResults.skipped} = 0 then 1 else 0 end)`,
@@ -210,6 +247,8 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
               median: Math.round(stats.medianTime || 0),
               min: Math.round(stats.minTime || 0),
               max: Math.round(stats.maxTime || 0),
+              q1: Math.round(stats.q1Time || 0),
+              q3: Math.round(stats.q3Time || 0),
             },
             score,
             breakdown: {

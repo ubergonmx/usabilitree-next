@@ -21,6 +21,7 @@ import {
 import { getTasksStats, type TaskStats } from "@/lib/treetest/results-actions";
 import { ChevronRightIcon, CheckCircledIcon } from "@/components/icons";
 import { PieChart } from "@/components/ui/pie-chart";
+import { BoxPlot } from "@/components/ui/box-plot";
 
 const confidenceLevels = [
   { value: 1, label: "Strongly Disagree" },
@@ -56,36 +57,48 @@ function StatBar({ value, margin, color }: { value: number; margin?: number; col
   );
 }
 
-function TaskBreakdownPie({ breakdown }: { breakdown: TaskStats["stats"]["breakdown"] }) {
+function TaskBreakdownPie({
+  breakdown,
+  score,
+}: {
+  breakdown: TaskStats["stats"]["breakdown"];
+  score: number;
+}) {
   const data = [
     {
       name: "Direct Success",
       value: breakdown.directSuccess,
+      percentage: ((breakdown.directSuccess / breakdown.total) * 100).toFixed(1),
       color: "bg-green-500",
     },
     {
       name: "Indirect Success",
       value: breakdown.indirectSuccess,
+      percentage: ((breakdown.indirectSuccess / breakdown.total) * 100).toFixed(1),
       color: "bg-green-300",
     },
     {
       name: "Direct Fail",
       value: breakdown.directFail,
+      percentage: ((breakdown.directFail / breakdown.total) * 100).toFixed(1),
       color: "bg-red-500",
     },
     {
       name: "Indirect Fail",
       value: breakdown.indirectFail,
+      percentage: ((breakdown.indirectFail / breakdown.total) * 100).toFixed(1),
       color: "bg-red-300",
     },
     {
       name: "Direct Skip",
       value: breakdown.directSkip,
+      percentage: ((breakdown.directSkip / breakdown.total) * 100).toFixed(1),
       color: "bg-gray-500",
     },
     {
       name: "Indirect Skip",
       value: breakdown.indirectSkip,
+      percentage: ((breakdown.indirectSkip / breakdown.total) * 100).toFixed(1),
       color: "bg-gray-300",
     },
   ].filter((item) => item.value > 0);
@@ -105,11 +118,58 @@ function TaskBreakdownPie({ breakdown }: { breakdown: TaskStats["stats"]["breakd
             <div key={item.name} className="flex items-center gap-2">
               <div className={`h-3 w-3 rounded-full ${item.color}`} />
               <span className="text-sm">
-                {item.name}: {((item.value / breakdown.total) * 100).toFixed(1)}%
+                {item.name}: {item.percentage}% ({item.value})
               </span>
             </div>
           ))}
         </div>
+        <div className="flex flex-col items-center justify-center">
+          <span className="text-sm font-medium">Overall Score</span>
+          <span className="text-4xl font-bold">{score}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TimeStats({
+  stats,
+  maxTimeLimit,
+}: {
+  stats: TaskStats["stats"]["time"];
+  maxTimeLimit?: number;
+}) {
+  const DEFAULT_MAX_TIME = 120; // 2 minutes in seconds
+  const effectiveMaxTime = maxTimeLimit || DEFAULT_MAX_TIME;
+
+  const boxPlotData = {
+    min: stats.min,
+    q1: stats.q1,
+    median: stats.median,
+    q3: stats.q3,
+    max: stats.max,
+    displayMax: effectiveMaxTime,
+  };
+
+  const formatTime = (seconds: number) => {
+    if (!seconds) return "0:00";
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.round(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">Time Taken Distribution</span>
+        <span className="text-sm text-muted-foreground">
+          min: {formatTime(stats.min)} / max: {formatTime(stats.max)}
+          {stats.max > effectiveMaxTime && " (truncated)"}
+        </span>
+      </div>
+      <BoxPlot data={boxPlotData} formatLabel={formatTime} />
+      <div className="text-center text-sm text-muted-foreground">
+        Median: {formatTime(stats.median)}
       </div>
     </div>
   );
@@ -180,14 +240,6 @@ export function TasksTab({ studyId }: { studyId: string }) {
     loadTasks();
   }, [studyId]);
 
-  const formatTime = (seconds: number) => {
-    if (!seconds) return "0:00";
-
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.round(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
   if (loading) {
     return (
       <div className="space-y-4">
@@ -239,7 +291,7 @@ export function TasksTab({ studyId }: { studyId: string }) {
           </AccordionTrigger>
           <AccordionContent className="pt-4">
             <div className="space-y-6">
-              <TaskBreakdownPie breakdown={task.stats.breakdown} />
+              <TaskBreakdownPie breakdown={task.stats.breakdown} score={task.stats.score} />
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Success Rate</span>
@@ -268,26 +320,7 @@ export function TasksTab({ studyId }: { studyId: string }) {
                 />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Time Taken</span>
-                  <span className="text-sm text-muted-foreground">
-                    min: {formatTime(task.stats.time.min)} / max: {formatTime(task.stats.time.max)}
-                  </span>
-                </div>
-                <div className="flex h-8 w-full items-center rounded-full bg-secondary px-4">
-                  <span className="text-sm font-medium">
-                    median: {formatTime(task.stats.time.median)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Overall Score</span>
-                  <span className="text-2xl font-bold">{task.stats.score}%</span>
-                </div>
-              </div>
+              <TimeStats stats={task.stats.time} maxTimeLimit={task.maxTimeSeconds} />
 
               <div className="border-t pt-4">
                 <ConfidenceRatingsTable ratings={task.stats.confidenceRatings} />
