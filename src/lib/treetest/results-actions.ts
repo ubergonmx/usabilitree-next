@@ -109,6 +109,7 @@ export interface TaskStats {
   id: string;
   description: string;
   expectedAnswer: string;
+  maxTimeSeconds: number | null;
   stats: {
     success: {
       rate: number;
@@ -150,6 +151,7 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
         id: treeTasks.id,
         description: treeTasks.description,
         expectedAnswer: treeTasks.expectedAnswer,
+        maxTimeSeconds: treeTasks.maxTimeSeconds || undefined,
       })
       .from(treeTasks)
       .where(eq(treeTasks.studyId, studyId))

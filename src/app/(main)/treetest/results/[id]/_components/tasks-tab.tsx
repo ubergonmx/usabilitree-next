@@ -137,7 +137,7 @@ function TimeStats({
   maxTimeLimit,
 }: {
   stats: TaskStats["stats"]["time"];
-  maxTimeLimit?: number;
+  maxTimeLimit?: number | null;
 }) {
   const DEFAULT_MAX_TIME = 120; // 2 minutes in seconds
   const effectiveMaxTime = maxTimeLimit || DEFAULT_MAX_TIME;
