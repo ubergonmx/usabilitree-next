@@ -208,6 +208,17 @@ export function TreeTestComponent({ config }: TreeTestProps) {
     setShowConfidenceModal(true);
   };
 
+  const findItemByLink = (item: Item, targetLink: string): Item | null => {
+    if (item.link === targetLink) return item;
+    if (!item.children) return null;
+
+    for (const child of item.children) {
+      const found = findItemByLink(child, targetLink);
+      if (found) return found;
+    }
+    return null;
+  };
+
   const handleConfidenceSubmit = async () => {
     if (!selectedLink) return;
 
@@ -218,11 +229,14 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       // Check if the selected link matches any of the correct answers
       const correctAnswers = config.tasks[currentTask].link.split(",").map((a) => a.trim());
       const isSuccessful = correctAnswers.includes(selectedLink);
-      const hasDirectPathtaken = correctAnswers.includes(pathTaken);
+      // Check if the path taken matches exactly with any item's link
+      const isDirectPath = config.tree.some(
+        (item) => findItemByLink(item, selectedLink)?.link === selectedLink
+      );
 
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
         successful: isSuccessful,
-        directPathTaken: hasDirectPathtaken,
+        directPathTaken: isDirectPath,
         completionTimeSeconds: duration,
         confidenceRating: confidenceLevel ? parseInt(confidenceLevel) : undefined,
         pathTaken: pathTaken,
@@ -253,7 +267,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
 
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
         successful: false,
-        directPathTaken: false,
+        directPathTaken: !pathTaken, // true if user didn't touch the nav menu (direct skip)
         completionTimeSeconds: duration,
         pathTaken: pathTaken,
         skipped: true,
