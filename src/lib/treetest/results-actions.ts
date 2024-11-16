@@ -285,11 +285,18 @@ export interface Participant {
   startedAt: Date;
   completedAt: Date | null;
   taskResults: {
+    id: string;
+    taskId: string;
     successful: boolean;
     directPathTaken: boolean;
     completionTimeSeconds: number;
+    pathTaken: string;
+    taskIndex: number;
+    description: string;
     skipped: boolean;
+    createdAt: Date;
   }[];
+  hasDuplicates: boolean;
 }
 
 export async function getParticipants(studyId: string): Promise<Participant[]> {
@@ -308,17 +315,37 @@ export async function getParticipants(studyId: string): Promise<Participant[]> {
       studyParticipants.map(async (participant) => {
         const results = await db
           .select({
+            id: treeTaskResults.id,
+            taskId: treeTaskResults.taskId,
             successful: treeTaskResults.successful,
             directPathTaken: treeTaskResults.directPathTaken,
             completionTimeSeconds: treeTaskResults.completionTimeSeconds,
+            pathTaken: treeTaskResults.pathTaken,
             skipped: treeTaskResults.skipped,
+            taskIndex: treeTasks.taskIndex,
+            description: treeTasks.description,
+            createdAt: treeTaskResults.createdAt,
           })
           .from(treeTaskResults)
+          .innerJoin(treeTasks, eq(treeTasks.id, treeTaskResults.taskId))
           .where(eq(treeTaskResults.participantId, participant.id));
+
+        // Group results by taskIndex to identify duplicates
+        const groupedResults = results.reduce(
+          (acc, result) => {
+            if (!acc[result.taskIndex]) {
+              acc[result.taskIndex] = [];
+            }
+            acc[result.taskIndex].push(result);
+            return acc;
+          },
+          {} as Record<number, typeof results>
+        );
 
         return {
           ...participant,
           taskResults: results,
+          hasDuplicates: Object.values(groupedResults).some((group) => group.length > 1),
         };
       })
     );
@@ -327,5 +354,23 @@ export async function getParticipants(studyId: string): Promise<Participant[]> {
   } catch (error) {
     console.error("Failed to fetch participants:", error);
     throw new Error("Failed to fetch participants");
+  }
+}
+
+export async function deleteTaskResult(taskId: string): Promise<void> {
+  try {
+    await db.delete(treeTaskResults).where(eq(treeTaskResults.id, taskId));
+  } catch (error) {
+    console.error("Failed to delete task result:", error);
+    throw new Error("Failed to delete task result");
+  }
+}
+
+export async function deleteParticipant(participantId: string): Promise<void> {
+  try {
+    await db.delete(participants).where(eq(participants.id, participantId));
+  } catch (error) {
+    console.error("Failed to delete participant:", error);
+    throw new Error("Failed to delete participant");
   }
 }
