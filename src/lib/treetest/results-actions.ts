@@ -107,6 +107,7 @@ export async function removeStudyCollaborator(collaboratorId: number) {
 
 export interface TaskStats {
   id: string;
+  index: number;
   description: string;
   expectedAnswer: string;
   maxTimeSeconds: number | null;
@@ -152,6 +153,7 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
         description: treeTasks.description,
         expectedAnswer: treeTasks.expectedAnswer,
         maxTimeSeconds: treeTasks.maxTimeSeconds || undefined,
+        index: treeTasks.taskIndex,
       })
       .from(treeTasks)
       .where(eq(treeTasks.studyId, studyId))

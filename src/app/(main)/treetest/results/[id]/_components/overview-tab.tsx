@@ -2,20 +2,27 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getStudyOverviewStats } from "@/lib/treetest/results-actions";
+import { getStudyOverviewStats, TaskStats } from "@/lib/treetest/results-actions";
 import { useEffect, useState } from "react";
 import { UsersIcon, CircleCheckBigIcon, TimerIcon, TargetIcon } from "@/components/icons";
 import { TreeTestOverviewStats } from "@/lib/types/tree-test";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { getTasksStats } from "@/lib/treetest/results-actions";
 
 export function OverviewTab({ studyId }: { studyId: string }) {
   const [stats, setStats] = useState<TreeTestOverviewStats | null>(null);
+  const [taskStats, setTaskStats] = useState<TaskStats[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const data = await getStudyOverviewStats(studyId);
-        setStats(data);
+        const [overviewData, tasksData] = await Promise.all([
+          getStudyOverviewStats(studyId),
+          getTasksStats(studyId),
+        ]);
+        setStats(overviewData);
+        setTaskStats(tasksData);
       } catch (error) {
         console.error("Failed to load overview stats:", error);
       } finally {
@@ -25,6 +32,19 @@ export function OverviewTab({ studyId }: { studyId: string }) {
 
     loadStats();
   }, [studyId]);
+
+  const taskChartData = taskStats.map((task) => {
+    const total = task.stats.breakdown.total;
+    return {
+      name: `Task ${task.index + 1}`,
+      "Direct Success": (task.stats.breakdown.directSuccess / total) * 100,
+      "Indirect Success": (task.stats.breakdown.indirectSuccess / total) * 100,
+      "Direct Fail": (task.stats.breakdown.directFail / total) * 100,
+      "Indirect Fail": (task.stats.breakdown.indirectFail / total) * 100,
+      "Direct Skip": (task.stats.breakdown.directSkip / total) * 100,
+      "Indirect Skip": (task.stats.breakdown.indirectSkip / total) * 100,
+    };
+  });
 
   if (loading) {
     return (
@@ -127,6 +147,46 @@ export function OverviewTab({ studyId }: { studyId: string }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Task Results Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                layout="vertical"
+                data={taskChartData}
+                margin={{ top: 20, right: 30, left: 40, bottom: 5 }}
+              >
+                <XAxis type="number" unit="%" domain={[0, 100]} />
+                <YAxis type="category" dataKey="name" width={60} />
+                <Tooltip
+                  formatter={(value: number) => [`${value.toFixed(1)}%`]}
+                  labelStyle={{ fontWeight: 500 }}
+                />
+                <Legend />
+                <Bar dataKey="Direct Success" stackId="a" fill="#22c55e" name="Direct Success" />
+                <Bar
+                  dataKey="Indirect Success"
+                  stackId="a"
+                  fill="#86efac"
+                  name="Indirect Success"
+                />
+                <Bar dataKey="Direct Fail" stackId="a" fill="#ef4444" name="Direct Fail" />
+                <Bar dataKey="Indirect Fail" stackId="a" fill="#fca5a5" name="Indirect Fail" />
+                <Bar dataKey="Direct Skip" stackId="a" fill="#eab308" name="Direct Skip" />
+                <Bar dataKey="Indirect Skip" stackId="a" fill="#fde047" name="Indirect Skip" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            Shows the percentage breakdown of participant results for each task. Direct means the
+            participant reached their destination without backtracking.
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
