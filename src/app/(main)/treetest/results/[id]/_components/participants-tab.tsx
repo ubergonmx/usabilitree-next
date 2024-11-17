@@ -69,12 +69,18 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
       p.sessionId.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDeleteResult = async (taskId: string) => {
+  const handleDeleteResult = async (taskId: string, participantId: string) => {
     try {
       await deleteTaskResult(taskId);
-      // Refresh the participants data
       const updatedParticipants = await getParticipants(studyId);
       setParticipants(updatedParticipants);
+      // Update selected participant if it's the one being viewed
+      if (selectedParticipant?.id === participantId) {
+        const updatedParticipant = updatedParticipants.find((p) => p.id === participantId);
+        if (updatedParticipant) {
+          setSelectedParticipant(updatedParticipant);
+        }
+      }
     } catch (error) {
       console.error("Failed to delete result:", error);
     }

@@ -36,7 +36,7 @@ interface ParticipantDetailsProps {
   participant: Participant;
   isOpen: boolean;
   onClose: () => void;
-  onDeleteResult: (taskId: string) => Promise<void>;
+  onDeleteResult: (taskId: string, participantId: string) => Promise<void>;
 }
 
 export function ParticipantDetailsModal({
@@ -215,7 +215,7 @@ export function ParticipantDetailsModal({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={async () => {
                 if (deleteTaskId) {
-                  await onDeleteResult(deleteTaskId);
+                  await onDeleteResult(deleteTaskId, participant.id);
                   setDeleteTaskId(null);
                 }
               }}
