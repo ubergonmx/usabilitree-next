@@ -104,6 +104,7 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed";
       nameKey?: string;
       labelKey?: string;
+      showPercentage?: boolean;
     }
 >(
   (
@@ -121,6 +122,7 @@ const ChartTooltipContent = React.forwardRef<
       color,
       nameKey,
       labelKey,
+      showPercentage = false,
     },
     ref
   ) => {
@@ -221,11 +223,11 @@ const ChartTooltipContent = React.forwardRef<
                           {itemConfig?.label || item.name}
                         </span>
                       </div>
-                      {item.value && (
-                        <span className="font-mono font-medium tabular-nums text-foreground">
-                          {item.value.toLocaleString()}
-                        </span>
-                      )}
+                      <span className="ml-2 font-mono font-medium tabular-nums text-foreground">
+                        {showPercentage
+                          ? `${Number(item.value ?? 0).toFixed()}%`
+                          : item.value?.toLocaleString()}
+                      </span>
                     </div>
                   </>
                 )}
@@ -259,7 +261,7 @@ const ChartLegendContent = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "flex items-center justify-center gap-4",
+        "flex flex-wrap items-center justify-center gap-4",
         verticalAlign === "top" ? "pb-3" : "pt-3",
         className
       )}
