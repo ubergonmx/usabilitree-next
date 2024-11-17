@@ -257,6 +257,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
     setShowConfidenceModal(false);
     setConfidenceLevel(undefined);
     setSelectedLink(undefined);
+    setPathTaken("");
     moveToNextTask();
   };
 
@@ -327,7 +328,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
                   Task {currentTask + 1} of {config.tasks.length}{" "}
                   {config.preview ? "(Preview)" : ""}
                 </h2>
-                <p className="mt-2">{config.tasks[currentTask].description}</p>
+                <p className="mt-2">{config.tasks[currentTask].description ?? "[Error occured]"}</p>
               </div>
               {started && (
                 <button
