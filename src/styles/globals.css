@@ -108,7 +108,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  @apply bg-secondary;
 }
 
 ::-webkit-scrollbar-thumb {
