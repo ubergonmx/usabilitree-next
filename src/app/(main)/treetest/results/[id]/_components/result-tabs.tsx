@@ -192,7 +192,7 @@ export default function ResultTabs({ params, userEmail, isOwner }: ResultTabsPro
         </TabsContent>
 
         <TabsContent value="participants">
-          <ParticipantsTab studyId={params.id} />
+          <ParticipantsTab studyId={params.id} isOwner={isOwner} />
         </TabsContent>
 
         <TabsContent value="tasks">

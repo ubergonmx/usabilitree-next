@@ -37,6 +37,7 @@ interface ParticipantDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   onDeleteResult: (taskId: string, participantId: string) => Promise<void>;
+  isOwner: boolean;
 }
 
 export function ParticipantDetailsModal({
@@ -44,6 +45,7 @@ export function ParticipantDetailsModal({
   isOpen,
   onClose,
   onDeleteResult,
+  isOwner,
 }: ParticipantDetailsProps) {
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
 
@@ -55,7 +57,7 @@ export function ParticipantDetailsModal({
           onOpenAutoFocus={(event) => event.preventDefault()} // fix to Tooltip automatically appearing
         >
           <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Participant Details</DialogTitle>
+            <DialogTitle>Participant {participant.participantNumber} Details</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 pb-6">
             <div className="space-y-6">
@@ -172,21 +174,23 @@ export function ParticipantDetailsModal({
                                 {format(new Date(Number(result.createdAt) / 1000), "PP p")}
                               </TableCell>
                               <TableCell>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                      <MoreHorizontalIcon className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                      className="text-destructive"
-                                      onClick={() => setDeleteTaskId(result.id)}
-                                    >
-                                      Delete Result
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                {isOwner ? (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <MoreHorizontalIcon className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem
+                                        className="text-destructive"
+                                        onClick={() => setDeleteTaskId(result.id)}
+                                      >
+                                        Delete Result
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                ) : null}
                               </TableCell>
                             </TableRow>
                           ))}

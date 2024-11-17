@@ -299,6 +299,7 @@ export interface Participant {
     createdAt: Date;
   }[];
   hasDuplicates: boolean;
+  participantNumber: number;
 }
 
 export async function getParticipants(studyId: string): Promise<Participant[]> {
@@ -314,7 +315,7 @@ export async function getParticipants(studyId: string): Promise<Participant[]> {
       .where(eq(participants.studyId, studyId));
 
     const participantsWithResults = await Promise.all(
-      studyParticipants.map(async (participant) => {
+      studyParticipants.map(async (participant, index) => {
         const results = await db
           .select({
             id: treeTaskResults.id,
@@ -348,6 +349,7 @@ export async function getParticipants(studyId: string): Promise<Participant[]> {
           ...participant,
           taskResults: results,
           hasDuplicates: Object.values(groupedResults).some((group) => group.length > 1),
+          participantNumber: index + 1,
         };
       })
     );

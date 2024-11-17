@@ -28,7 +28,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MoreHorizontalIcon, CheckCircledIcon, CrossCircledIcon } from "@/components/icons";
+import {
+  MoreHorizontalIcon,
+  CheckCircledIcon,
+  CrossCircledIcon,
+  SearchIcon,
+  XIcon,
+} from "@/components/icons";
 import { formatDistanceToNow } from "date-fns";
 import {
   getParticipants,
@@ -36,10 +42,15 @@ import {
   deleteTaskResult,
   deleteParticipant,
 } from "@/lib/treetest/results-actions";
-
+import { toast } from "sonner";
 import { ParticipantDetailsModal } from "./participant-details-modal";
 
-export function ParticipantsTab({ studyId }: { studyId: string }) {
+interface ParticipantsTabProps {
+  studyId: string;
+  isOwner: boolean;
+}
+
+export function ParticipantsTab({ studyId, isOwner }: ParticipantsTabProps) {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
@@ -58,17 +69,12 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
       await deleteParticipant(participantId);
       const updatedParticipants = await getParticipants(studyId);
       setParticipants(updatedParticipants);
+      toast.success("Participant deleted successfully");
     } catch (error) {
       console.error("Failed to delete participant:", error);
+      toast.error("Failed to delete participant");
     }
   };
-
-  const filteredParticipants = participants.filter(
-    (p) =>
-      p.id.toLowerCase().includes(search.toLowerCase()) ||
-      p.sessionId.toLowerCase().includes(search.toLowerCase())
-  );
-
   const handleDeleteResult = async (taskId: string, participantId: string) => {
     try {
       await deleteTaskResult(taskId);
@@ -81,17 +87,69 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
           setSelectedParticipant(updatedParticipant);
         }
       }
+      toast.success("Task result deleted successfully");
     } catch (error) {
-      console.error("Failed to delete result:", error);
+      console.error("Failed to delete task result:", error);
+      toast.error("Failed to delete task result");
     }
   };
+
+  const filteredParticipants = participants.filter((p) => {
+    const searchLower = search.toLowerCase();
+
+    // If search is a number, only match participant numbers
+    if (/^\d+$/.test(search)) {
+      return `participant ${p.participantNumber}`.includes(search);
+    }
+
+    // Otherwise search across all fields
+    return (
+      p.id.toLowerCase().includes(searchLower) ||
+      p.sessionId.toLowerCase().includes(searchLower) ||
+      `participant ${p.participantNumber}`.toLowerCase().includes(searchLower)
+    );
+  });
 
   if (loading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
+        {/* Note box skeleton */}
+        <div className="rounded-md bg-muted px-4 py-3">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="mt-1 h-4 w-1/2" />
+        </div>
+
+        {/* Search bar skeleton */}
+        <div className="relative max-w-sm">
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        {/* Table skeleton */}
+        <div className="rounded-md border">
+          <div className="p-4">
+            {/* Header */}
+            <div className="flex items-center gap-4 border-b pb-4">
+              <Skeleton className="h-4 w-24" /> {/* Participant */}
+              <Skeleton className="h-4 w-16" /> {/* Status */}
+              <Skeleton className="h-4 w-20" /> {/* Started */}
+              <Skeleton className="h-4 w-16" /> {/* Duration */}
+              <Skeleton className="h-4 w-20" /> {/* Success Rate */}
+              <Skeleton className="h-4 w-16" /> {/* Directness */}
+            </div>
+
+            {/* Rows */}
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 border-b py-4">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -111,13 +169,33 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
 
   return (
     <>
-      <div className="mb-4">
-        <Input
-          placeholder="Search by Participant ID or Session ID..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-sm"
-        />
+      <div className="mb-4 space-y-4">
+        <div className="rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">
+          <p>
+            Note: Participant numbers (e.g., &quot;Participant 1&quot;) are generated based on the
+            order of creation time in the database. These numbers are for display purposes only and
+            may change if earlier entries are deleted.
+          </p>
+        </div>
+        <div className="relative max-w-sm">
+          <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+            <SearchIcon className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <Input
+            placeholder="Search by Participant ID, Session ID, or Participant Number..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -135,7 +213,7 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
           <TableBody>
             {filteredParticipants
               .sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())
-              .map((participant, index) => {
+              .map((participant) => {
                 const taskStats = participant.taskResults.reduce(
                   (acc, result) => {
                     if (!result.skipped) {
@@ -154,7 +232,7 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
                 return (
                   <TableRow key={participant.id}>
                     <TableCell className="font-medium">
-                      <div>Participant {index + 1}</div>
+                      <div>Participant {participant.participantNumber}</div>
                       {participant.hasDuplicates && (
                         <div className="text-xs text-yellow-500">Has duplicate responses</div>
                       )}
@@ -197,12 +275,14 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
                           <DropdownMenuItem onClick={() => setSelectedParticipant(participant)}>
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => setDeleteParticipantId(participant.id)}
-                          >
-                            Delete Results
-                          </DropdownMenuItem>
+                          {isOwner && (
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => setDeleteParticipantId(participant.id)}
+                            >
+                              Delete Results
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -218,6 +298,7 @@ export function ParticipantsTab({ studyId }: { studyId: string }) {
           isOpen={!!selectedParticipant}
           onClose={() => setSelectedParticipant(null)}
           onDeleteResult={handleDeleteResult}
+          isOwner={isOwner}
         />
       )}
       {/* Delete Participant Confirmation */}
