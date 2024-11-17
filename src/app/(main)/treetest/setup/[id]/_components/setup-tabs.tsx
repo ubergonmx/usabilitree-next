@@ -7,6 +7,10 @@ import {
   TrashIcon,
   RocketIcon,
   WorkflowIcon,
+  GearIcon,
+  FileTextIcon,
+  ChecklistIcon,
+  MessageSquareCodeIcon,
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -260,11 +264,23 @@ export default function SetupTabs({ params }: SetupTabsProps) {
       </div>
 
       <Tabs defaultValue="general" className="mt-6 w-full">
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="tree">Tree</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="messages">Messages</TabsTrigger>
+        <TabsList className="flex h-auto w-full flex-wrap items-center justify-start">
+          <TabsTrigger value="general" className="gap-2">
+            <GearIcon className="h-4 w-4" />
+            General
+          </TabsTrigger>
+          <TabsTrigger value="tree" className="gap-2">
+            <FileTextIcon className="h-4 w-4" />
+            Tree
+          </TabsTrigger>
+          <TabsTrigger value="tasks" className="gap-2">
+            <ChecklistIcon className="h-4 w-4" />
+            Tasks
+          </TabsTrigger>
+          <TabsTrigger value="messages" className="gap-2">
+            <MessageSquareCodeIcon className="h-4 w-4" />
+            Messages
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">

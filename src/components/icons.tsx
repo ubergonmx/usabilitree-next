@@ -85,6 +85,7 @@ export {
   CircleCheckIcon,
   FlagIcon,
   MoreHorizontalIcon,
+  MessageSquareCodeIcon,
 } from "lucide-react";
 
 export {

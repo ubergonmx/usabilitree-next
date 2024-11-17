@@ -172,7 +172,7 @@ export default function ResultTabs({ params, userEmail, isOwner }: ResultTabsPro
       </div>
 
       <Tabs defaultValue="overview" className="mt-6 w-full">
-        <TabsList className="w-full justify-start">
+        <TabsList className="flex h-auto w-full flex-wrap items-center justify-start">
           <TabsTrigger value="overview" className="gap-2">
             <BarChartIcon className="h-4 w-4" /> Overview
           </TabsTrigger>
