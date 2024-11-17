@@ -8,7 +8,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList } from "@/components/ui/breadcrumb";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -68,37 +67,37 @@ function TaskBreakdownPie({
     {
       name: "Direct Success",
       value: breakdown.directSuccess,
-      percentage: ((breakdown.directSuccess / breakdown.total) * 100).toFixed(1),
+      percentage: ((breakdown.directSuccess / breakdown.total) * 100).toFixed(),
       color: "bg-green-500",
     },
     {
       name: "Indirect Success",
       value: breakdown.indirectSuccess,
-      percentage: ((breakdown.indirectSuccess / breakdown.total) * 100).toFixed(1),
+      percentage: ((breakdown.indirectSuccess / breakdown.total) * 100).toFixed(),
       color: "bg-green-300",
     },
     {
       name: "Direct Fail",
       value: breakdown.directFail,
-      percentage: ((breakdown.directFail / breakdown.total) * 100).toFixed(1),
+      percentage: ((breakdown.directFail / breakdown.total) * 100).toFixed(),
       color: "bg-red-500",
     },
     {
       name: "Indirect Fail",
       value: breakdown.indirectFail,
-      percentage: ((breakdown.indirectFail / breakdown.total) * 100).toFixed(1),
+      percentage: ((breakdown.indirectFail / breakdown.total) * 100).toFixed(),
       color: "bg-red-300",
     },
     {
       name: "Direct Skip",
       value: breakdown.directSkip,
-      percentage: ((breakdown.directSkip / breakdown.total) * 100).toFixed(1),
+      percentage: ((breakdown.directSkip / breakdown.total) * 100).toFixed(),
       color: "bg-gray-500",
     },
     {
       name: "Indirect Skip",
       value: breakdown.indirectSkip,
-      percentage: ((breakdown.indirectSkip / breakdown.total) * 100).toFixed(1),
+      percentage: ((breakdown.indirectSkip / breakdown.total) * 100).toFixed(),
       color: "bg-gray-300",
     },
   ].filter((item) => item.value > 0);
@@ -109,7 +108,7 @@ function TaskBreakdownPie({
         <span className="text-sm font-medium">Task Completion Breakdown</span>
         <span className="text-sm text-muted-foreground">Total Participants: {breakdown.total}</span>
       </div>
-      <div className="flex items-center gap-8">
+      <div className="flex items-center justify-center gap-8">
         <div className="h-48 w-48">
           <PieChart data={data} />
         </div>
@@ -244,14 +243,31 @@ export function TasksTab({ studyId }: { studyId: string }) {
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-4 w-3/4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-20 w-full" />
-            </CardContent>
-          </Card>
+          <div key={i} className="space-y-4 rounded-lg border px-6 py-4">
+            {/* Task Header */}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-4 w-16" /> {/* Task number */}
+                <Skeleton className="h-5 w-64" /> {/* Task description */}
+              </div>
+
+              {/* Expected Answer Paths */}
+              <div className="space-y-2">
+                {[...Array(2)].map((_, j) => (
+                  <div key={j} className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4" /> {/* CheckCircle icon */}
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-4" /> {/* Chevron */}
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-4" /> {/* Chevron */}
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     );

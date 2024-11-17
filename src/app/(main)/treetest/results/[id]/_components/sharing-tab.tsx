@@ -12,6 +12,7 @@ import {
   removeStudyCollaborator,
   type Collaborator,
 } from "@/lib/treetest/results-actions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SharingTabProps {
   studyId: string;
@@ -87,7 +88,33 @@ export function SharingTab({ studyId, userEmail, isOwner }: SharingTabProps) {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-7 w-32" /> {/* Title */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-24" /> {/* Card Title */}
+            <Skeleton className="mt-2 h-4 w-full" /> {/* Description line 1 */}
+            <Skeleton className="mt-1 h-4 w-3/4" /> {/* Description line 2 */}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isOwner && (
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-full" /> {/* Input field */}
+                <Skeleton className="h-4 w-56" /> {/* Helper text */}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              {/* Skeleton badges */}
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-7 w-32 rounded-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
