@@ -51,7 +51,7 @@ export function ParticipantDetailsModal({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="flex max-h-[90vh] max-w-4xl flex-col gap-0 p-0"
+          className="flex max-h-[90vh] max-w-6xl flex-col gap-0 p-0"
           onOpenAutoFocus={(event) => event.preventDefault()} // fix to Tooltip automatically appearing
         >
           <DialogHeader className="p-6 pb-2">

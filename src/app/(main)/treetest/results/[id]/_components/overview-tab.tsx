@@ -109,6 +109,23 @@ export function OverviewTab({ studyId }: { studyId: string }) {
             </Card>
           ))}
         </div>
+        <Card className="mt-8">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle>
+              <Skeleton className="h-5 w-40" />
+            </CardTitle>
+            <Skeleton className="h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-[500px]">
+              <Skeleton className="h-full w-full" />
+            </div>
+            <div className="mt-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="mt-2 h-4 w-3/4" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -125,14 +142,17 @@ export function OverviewTab({ studyId }: { studyId: string }) {
 
   const taskChartData = taskStats.map((task) => {
     const total = task.stats.breakdown.total;
+    const calculatePercentage = (value: number) =>
+      Math.min(Number(((value / total) * 100).toFixed(1)), 100);
+
     return {
       name: `${task.index + 1}`,
-      "Direct Success": (task.stats.breakdown.directSuccess / total) * 100,
-      "Indirect Success": (task.stats.breakdown.indirectSuccess / total) * 100,
-      "Direct Fail": (task.stats.breakdown.directFail / total) * 100,
-      "Indirect Fail": (task.stats.breakdown.indirectFail / total) * 100,
-      "Direct Skip": (task.stats.breakdown.directSkip / total) * 100,
-      "Indirect Skip": (task.stats.breakdown.indirectSkip / total) * 100,
+      "Direct Success": calculatePercentage(task.stats.breakdown.directSuccess),
+      "Indirect Success": calculatePercentage(task.stats.breakdown.indirectSuccess),
+      "Direct Fail": calculatePercentage(task.stats.breakdown.directFail),
+      "Indirect Fail": calculatePercentage(task.stats.breakdown.indirectFail),
+      "Direct Skip": calculatePercentage(task.stats.breakdown.directSkip),
+      "Indirect Skip": calculatePercentage(task.stats.breakdown.indirectSkip),
     };
   });
 
@@ -244,7 +264,13 @@ export function OverviewTab({ studyId }: { studyId: string }) {
                 data={taskChartData}
                 margin={{ top: 20, left: 10, right: 10 }}
               >
-                <XAxis type="number" unit="%" domain={[0, 100]} />
+                <XAxis
+                  type="number"
+                  unit="%"
+                  domain={[0, 100]}
+                  ticks={[0, 20, 40, 60, 80, 100]}
+                  tickFormatter={(value) => `${Math.min(value, 100)}`}
+                />
                 <YAxis type="category" dataKey="name" width={20} interval={0} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend content={<CustomLegend />} />
