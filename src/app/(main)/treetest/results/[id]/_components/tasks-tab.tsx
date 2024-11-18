@@ -174,6 +174,58 @@ function TimeStats({
   );
 }
 
+function IncorrectDestinationsTable({
+  destinations,
+}: {
+  destinations: TaskStats["stats"]["incorrectDestinations"];
+}) {
+  if (destinations.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">Incorrect Destinations</span>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Path Taken</TableHead>
+            <TableHead>Participants</TableHead>
+            <TableHead className="text-right">Percentage</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {destinations
+            .sort((a, b) => b.count - a.count)
+            .map((destination, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <Breadcrumb>
+                    <BreadcrumbList>
+                      {destination.path
+                        .split("/")
+                        .filter(Boolean)
+                        .map((item, i) => (
+                          <BreadcrumbItem key={i}>
+                            {i > 0 && <ChevronRightIcon className="h-4 w-4" />}
+                            {item}
+                          </BreadcrumbItem>
+                        ))}
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                </TableCell>
+                <TableCell>{destination.count}</TableCell>
+                <TableCell className="text-right">{destination.percentage}%</TableCell>
+              </TableRow>
+            ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 function ConfidenceRatingsTable({ ratings }: { ratings: TaskStats["stats"]["confidenceRatings"] }) {
   return (
     <div className="space-y-4">
@@ -337,6 +389,10 @@ export function TasksTab({ studyId }: { studyId: string }) {
               </div>
 
               <TimeStats stats={task.stats.time} maxTimeLimit={task.maxTimeSeconds} />
+
+              <div className="border-t pt-4">
+                <IncorrectDestinationsTable destinations={task.stats.incorrectDestinations} />
+              </div>
 
               <div className="border-t pt-4">
                 <ConfidenceRatingsTable ratings={task.stats.confidenceRatings} />

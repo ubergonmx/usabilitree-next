@@ -45,6 +45,22 @@ import {
 import { toast } from "sonner";
 import { ParticipantDetailsModal } from "./participant-details-modal";
 
+// Extract Note component to reuse
+const ParticipantsNote = () => (
+  <div className="rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">
+    <p>
+      Note: Participant numbers (e.g., &quot;Participant 1&quot;) are generated based on the order
+      of creation time in the database. These numbers are for display purposes only and may change
+      if earlier entries are deleted.
+    </p>
+    <p className="mt-2">
+      If you see duplicate responses (e.g., &quot;A1&quot; meaning Attempt 1), you can delete the
+      subsequent attempts. This may occur due to participants experiencing connectivity issues
+      during the study.
+    </p>
+  </div>
+);
+
 interface ParticipantsTabProps {
   studyId: string;
   isOwner: boolean;
@@ -113,17 +129,10 @@ export function ParticipantsTab({ studyId, isOwner }: ParticipantsTabProps) {
   if (loading) {
     return (
       <div className="space-y-4">
-        {/* Note box skeleton */}
-        <div className="rounded-md bg-muted px-4 py-3">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="mt-1 h-4 w-1/2" />
-        </div>
-
-        {/* Search bar skeleton */}
+        <ParticipantsNote />
         <div className="relative max-w-sm">
           <Skeleton className="h-10 w-full" />
         </div>
-
         {/* Table skeleton */}
         <div className="rounded-md border">
           <Table>
@@ -199,13 +208,7 @@ export function ParticipantsTab({ studyId, isOwner }: ParticipantsTabProps) {
   return (
     <>
       <div className="mb-4 space-y-4">
-        <div className="rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">
-          <p>
-            Note: Participant numbers (e.g., &quot;Participant 1&quot;) are generated based on the
-            order of creation time in the database. These numbers are for display purposes only and
-            may change if earlier entries are deleted.
-          </p>
-        </div>
+        <ParticipantsNote />
         <div className="relative max-w-sm">
           <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
             <SearchIcon className="h-4 w-4 text-muted-foreground" />

@@ -137,6 +137,11 @@ export interface TaskStats {
       indirectSkip: number;
       total: number;
     };
+    incorrectDestinations: {
+      path: string;
+      count: number;
+      percentage: number;
+    }[];
     confidenceRatings: {
       value: number;
       count: number;
@@ -219,6 +224,26 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
         // Calculate overall score (weighted average of success and directness)
         const score = Math.round(stats.successRate * 0.7 + stats.directnessRate * 0.3);
 
+        // Get incorrect destinations
+        const incorrectResults = await db
+          .select({
+            pathTaken: treeTaskResults.pathTaken,
+            count: sql<number>`count(*)`,
+          })
+          .from(treeTaskResults)
+          .innerJoin(participants, eq(participants.id, treeTaskResults.participantId))
+          .where(
+            and(
+              eq(participants.studyId, studyId),
+              eq(treeTaskResults.taskId, task.id),
+              eq(treeTaskResults.successful, false),
+              eq(treeTaskResults.skipped, false)
+            )
+          )
+          .groupBy(treeTaskResults.pathTaken);
+
+        const totalIncorrect = incorrectResults.reduce((sum, r) => sum + Number(r.count), 0);
+
         // Get confidence ratings distribution
         const confidenceRatings = await db
           .select({
@@ -264,6 +289,11 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
               indirectSkip: Number(stats.indirectSkip) || 0,
               total: Number(stats.total) || 0,
             },
+            incorrectDestinations: incorrectResults.map((result) => ({
+              path: result.pathTaken,
+              count: Number(result.count),
+              percentage: Math.round((Number(result.count) / totalIncorrect) * 100),
+            })),
             confidenceRatings: confidenceRatings.map((rating) => ({
               value: Number(rating.value),
               count: Number(rating.count),
