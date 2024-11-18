@@ -21,6 +21,8 @@ import { getTasksStats, type TaskStats } from "@/lib/treetest/results-actions";
 import { ChevronRightIcon, CheckCircledIcon } from "@/components/icons";
 import { PieChart } from "@/components/ui/pie-chart";
 import { BoxPlot } from "@/components/ui/box-plot";
+import { Button } from "@/components/ui/button";
+import { Item } from "@/lib/types/tree-test";
 
 const confidenceLevels = [
   { value: 1, label: "Strongly Disagree" },
@@ -174,34 +176,111 @@ function TimeStats({
   );
 }
 
+interface ParticipantDestination {
+  path: string;
+  count: number;
+  percentage: number;
+}
+
+interface ConfiguredPath extends ParticipantDestination {
+  paths: {
+    path: string;
+    count: number;
+  }[];
+}
+
+type Destination = ParticipantDestination | ConfiguredPath;
+
 function IncorrectDestinationsTable({
   destinations,
+  parsedTree,
 }: {
-  destinations: TaskStats["stats"]["incorrectDestinations"];
+  destinations: { path: string; count: number }[];
+  parsedTree: string;
 }) {
+  const [showParticipantPaths, setShowParticipantPaths] = useState(false);
+  const tree = JSON.parse(parsedTree) as Item[];
+
   if (destinations.length === 0) {
     return null;
   }
+
+  const validLinks = new Map<string, string>();
+
+  function collectLinks(nodes: Item[], currentPath: string = "") {
+    nodes.forEach((node) => {
+      if (node.link) {
+        const finalSegment = node.link.split("/").pop()!;
+        validLinks.set(finalSegment, node.link);
+      }
+      if (node.children?.length) {
+        collectLinks(node.children, currentPath);
+      }
+    });
+  }
+  collectLinks(tree);
+
+  const totalParticipants = destinations.reduce((sum, d) => sum + d.count, 0);
+
+  const destinationsToShow: Destination[] = !showParticipantPaths
+    ? Array.from(
+        destinations
+          .reduce((acc, dest) => {
+            const finalSegment = dest.path.split("/").pop()!;
+            const configuredPath = validLinks.get(finalSegment);
+
+            if (configuredPath) {
+              if (!acc.has(configuredPath)) {
+                acc.set(configuredPath, {
+                  path: configuredPath,
+                  count: 0,
+                  percentage: 0,
+                  paths: [],
+                });
+              }
+              const entry = acc.get(configuredPath)!;
+              entry.count += dest.count;
+              entry.paths.push(dest);
+            }
+            return acc;
+          }, new Map<string, ConfiguredPath>())
+          .values()
+      )
+        .map((dest) => ({
+          ...dest,
+          percentage: Math.round((dest.count / totalParticipants) * 100),
+        }))
+        .sort((a, b) => b.count - a.count)
+    : destinations.map((dest) => ({
+        path: dest.path,
+        count: dest.count,
+        percentage: Math.round((dest.count / totalParticipants) * 100),
+      }));
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">Incorrect Destinations</span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowParticipantPaths(!showParticipantPaths)}
+        >
+          Show {!showParticipantPaths ? "Participant" : "Configured"} Paths
+        </Button>
       </div>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Path Taken</TableHead>
-            <TableHead>Participants</TableHead>
-            <TableHead className="text-right">Percentage</TableHead>
+            <TableHead className="text-right"># of Participants</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {destinations
-            .sort((a, b) => b.count - a.count)
-            .map((destination, index) => (
-              <TableRow key={index}>
-                <TableCell>
+          {destinationsToShow.map((destination, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <div className="flex items-center space-x-2">
                   <Breadcrumb>
                     <BreadcrumbList>
                       {destination.path
@@ -215,11 +294,42 @@ function IncorrectDestinationsTable({
                         ))}
                     </BreadcrumbList>
                   </Breadcrumb>
-                </TableCell>
-                <TableCell>{destination.count}</TableCell>
-                <TableCell className="text-right">{destination.percentage}%</TableCell>
-              </TableRow>
-            ))}
+                  {/* {!showParticipantPaths &&
+                    "paths" in destination &&
+                    destination.paths.length > 1 && (
+                      <HoverCard>
+                        <HoverCardTrigger>
+                          <InfoCircledIcon className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-semibold">Participant Paths</h4>
+                            <div className="text-sm text-muted-foreground">
+                              <div className="mb-2">
+                                Includes {destination.paths.length} different paths:
+                              </div>
+                              <ul className="list-disc space-y-1 pl-4">
+                                {destination.paths.map((path, i) => (
+                                  <li key={i}>
+                                    {path.path}
+                                    <span className="ml-1 text-xs">
+                                      ({path.count} participant{path.count > 1 ? "s" : ""})
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    )} */}
+                </div>
+              </TableCell>
+              <TableCell className="text-right">
+                {destination.count} ({destination.percentage}%)
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
@@ -391,7 +501,10 @@ export function TasksTab({ studyId }: { studyId: string }) {
               <TimeStats stats={task.stats.time} maxTimeLimit={task.maxTimeSeconds} />
 
               <div className="border-t pt-4">
-                <IncorrectDestinationsTable destinations={task.stats.incorrectDestinations} />
+                <IncorrectDestinationsTable
+                  destinations={task.stats.incorrectDestinations}
+                  parsedTree={task.parsedTree}
+                />
               </div>
 
               <div className="border-t pt-4">

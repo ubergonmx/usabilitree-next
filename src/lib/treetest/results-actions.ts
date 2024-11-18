@@ -1,7 +1,13 @@
 "use server";
 
 import { db } from "@/db";
-import { participants, studyCollaborators, treeTaskResults, treeTasks } from "@/db/schema";
+import {
+  participants,
+  studyCollaborators,
+  treeConfigs,
+  treeTaskResults,
+  treeTasks,
+} from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { TreeTestOverviewStats } from "../types/tree-test";
 
@@ -111,6 +117,7 @@ export interface TaskStats {
   description: string;
   expectedAnswer: string;
   maxTimeSeconds: number | null;
+  parsedTree: string;
   stats: {
     success: {
       rate: number;
@@ -159,8 +166,10 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
         expectedAnswer: treeTasks.expectedAnswer,
         maxTimeSeconds: treeTasks.maxTimeSeconds || undefined,
         index: treeTasks.taskIndex,
+        parsedTree: treeConfigs.parsedTree,
       })
       .from(treeTasks)
+      .innerJoin(treeConfigs, eq(treeConfigs.studyId, treeTasks.studyId))
       .where(eq(treeTasks.studyId, studyId))
       .orderBy(treeTasks.taskIndex);
 
