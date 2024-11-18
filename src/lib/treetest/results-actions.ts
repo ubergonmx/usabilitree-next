@@ -9,7 +9,7 @@ import {
   treeTasks,
 } from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
-import { TreeTestOverviewStats } from "../types/tree-test";
+import { Item, ParentClickStats, TreeTestOverviewStats } from "../types/tree-test";
 
 export async function getStudyOverviewStats(studyId: string): Promise<TreeTestOverviewStats> {
   try {
@@ -144,6 +144,14 @@ export interface TaskStats {
       indirectSkip: number;
       total: number;
     };
+    parentClicks: {
+      path: string;
+      isCorrect: boolean;
+      firstClickCount: number;
+      firstClickPercentage: number;
+      totalClickCount: number;
+      totalClickPercentage: number;
+    }[];
     incorrectDestinations: {
       path: string;
       count: number;
@@ -233,6 +241,63 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
         // Calculate overall score (weighted average of success and directness)
         const score = Math.round(stats.successRate * 0.7 + stats.directnessRate * 0.3);
 
+        // Get parent clicks statistics
+        const pathResults = await db
+          .select({
+            pathTaken: treeTaskResults.pathTaken,
+            count: sql<number>`count(*)`,
+          })
+          .from(treeTaskResults)
+          .innerJoin(participants, eq(participants.id, treeTaskResults.participantId))
+          .where(
+            and(
+              eq(participants.studyId, studyId),
+              eq(treeTaskResults.taskId, task.id),
+              eq(treeTaskResults.skipped, false)
+            )
+          )
+          .groupBy(treeTaskResults.pathTaken);
+
+        const totalParticipants = pathResults.reduce((sum, r) => sum + Number(r.count), 0);
+
+        // Parse the tree to determine if "home" is the only root child
+        const tree = JSON.parse(task.parsedTree) as Item[];
+        const hasOnlyHomeRoot = tree.length === 1 && tree[0].name.toLowerCase() === "home";
+
+        // Process paths to get parent click statistics
+        const parentClickStats = new Map<string, ParentClickStats>();
+
+        pathResults.forEach((result) => {
+          const pathParts = result.pathTaken.split("/").filter(Boolean);
+          const expectedParts = task.expectedAnswer.split("/").filter(Boolean);
+
+          // Get parent path based on tree structure
+          const parentPath =
+            hasOnlyHomeRoot && pathParts.length > 1 ? `/home/${pathParts[1]}` : `/${pathParts[0]}`;
+
+          const expectedParentPath =
+            hasOnlyHomeRoot && expectedParts.length > 1
+              ? `/home/${expectedParts[1]}`
+              : `/${expectedParts[0]}`;
+
+          if (!parentClickStats.has(parentPath)) {
+            parentClickStats.set(parentPath, {
+              path: parentPath,
+              isCorrect: parentPath === expectedParentPath,
+              firstClickCount: Number(result.count),
+              firstClickPercentage: Math.round((Number(result.count) / totalParticipants) * 100),
+              totalClickCount: Number(result.count),
+              totalClickPercentage: Math.round((Number(result.count) / totalParticipants) * 100),
+            });
+          } else {
+            const stats = parentClickStats.get(parentPath)!;
+            stats.totalClickCount += Number(result.count);
+            stats.totalClickPercentage = Math.round(
+              (stats.totalClickCount / totalParticipants) * 100
+            );
+          }
+        });
+
         // Get incorrect destinations
         const incorrectResults = await db
           .select({
@@ -298,6 +363,9 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
               indirectSkip: Number(stats.indirectSkip) || 0,
               total: Number(stats.total) || 0,
             },
+            parentClicks: Array.from(parentClickStats.values()).sort(
+              (a, b) => b.firstClickCount - a.firstClickCount
+            ),
             incorrectDestinations: incorrectResults.map((result) => ({
               path: result.pathTaken,
               count: Number(result.count),

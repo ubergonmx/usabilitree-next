@@ -176,6 +176,68 @@ function TimeStats({
   );
 }
 
+function FirstClickedParentTable({
+  parentClicks,
+}: {
+  parentClicks: TaskStats["stats"]["parentClicks"];
+}) {
+  if (parentClicks.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">First-Clicked Parent Labels</span>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Path</TableHead>
+            <TableHead>Correct First Click</TableHead>
+            <TableHead className="text-right">Clicked First</TableHead>
+            <TableHead className="text-right">Clicked During Task</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {parentClicks.map((click, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    {click.path
+                      .split("/")
+                      .filter(Boolean)
+                      .map((item, i) => (
+                        <BreadcrumbItem key={i}>
+                          {i > 0 && <ChevronRightIcon className="h-4 w-4" />}
+                          {item}
+                        </BreadcrumbItem>
+                      ))}
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </TableCell>
+              <TableCell>
+                {click.isCorrect ? (
+                  <span className="text-green-500">Yes</span>
+                ) : (
+                  <span className="text-red-500">No</span>
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                {click.firstClickCount} ({click.firstClickPercentage}%)
+              </TableCell>
+              <TableCell className="text-right">
+                {click.totalClickCount} ({click.totalClickPercentage}%)
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 interface ParticipantDestination {
   path: string;
   count: number;
@@ -364,7 +426,7 @@ function ConfidenceRatingsTable({ ratings }: { ratings: TaskStats["stats"]["conf
                 <TableCell className="w-[300px]">
                   <div className="relative h-4 w-full rounded-full bg-secondary">
                     <div
-                      className="bg-blue-bar absolute left-0 top-0 h-full rounded-full"
+                      className="absolute left-0 top-0 h-full rounded-full bg-blue-bar"
                       style={{ width: `${rating.percentage}%` }}
                     />
                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-medium text-foreground">
@@ -499,6 +561,10 @@ export function TasksTab({ studyId }: { studyId: string }) {
               </div>
 
               <TimeStats stats={task.stats.time} maxTimeLimit={task.maxTimeSeconds} />
+
+              <div className="border-t pt-4">
+                <FirstClickedParentTable parentClicks={task.stats.parentClicks} />
+              </div>
 
               <div className="border-t pt-4">
                 <IncorrectDestinationsTable

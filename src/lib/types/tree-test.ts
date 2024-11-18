@@ -58,3 +58,12 @@ export interface TreeTestOverviewStats {
   successRate: number;
   directnessRate: number;
 }
+
+export interface ParentClickStats {
+  path: string;
+  isCorrect: boolean;
+  firstClickCount: number;
+  firstClickPercentage: number;
+  totalClickCount: number;
+  totalClickPercentage: number;
+}
