@@ -364,7 +364,7 @@ function ConfidenceRatingsTable({ ratings }: { ratings: TaskStats["stats"]["conf
                 <TableCell className="w-[300px]">
                   <div className="relative h-4 w-full rounded-full bg-secondary">
                     <div
-                      className="absolute left-0 top-0 h-full rounded-full bg-blue-500"
+                      className="bg-blue-bar absolute left-0 top-0 h-full rounded-full"
                       style={{ width: `${rating.percentage}%` }}
                     />
                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-medium text-foreground">
@@ -480,7 +480,7 @@ export function TasksTab({ studyId }: { studyId: string }) {
                 <StatBar
                   value={task.stats.success.rate}
                   margin={task.stats.success.margin}
-                  color="bg-green-500"
+                  color="bg-green-bar"
                 />
               </div>
 
@@ -494,7 +494,7 @@ export function TasksTab({ studyId }: { studyId: string }) {
                 <StatBar
                   value={task.stats.directness.rate}
                   margin={task.stats.directness.margin}
-                  color="bg-blue-500"
+                  color="bg-blue-bar"
                 />
               </div>
 

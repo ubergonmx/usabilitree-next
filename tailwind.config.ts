@@ -68,6 +68,8 @@ const config: Config = {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        "green-bar": "hsl(var(--green))",
+        "blue-bar": "hsl(var(--blue))",
       },
       keyframes: {
         "accordion-down": {
