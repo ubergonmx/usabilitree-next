@@ -6,6 +6,9 @@ import DarkIcon from "@/assets/icons/icon-dark.svg";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { APP_TITLE } from "@/lib/constants";
 import localFont from "next/font/local";
+import { CSPostHogProvider } from "@/providers/posthog-provider";
+import PostHogPageView from "@/components/posthog/post-hog-page-view-";
+import { Suspense } from "react";
 
 // import { Inter } from "next/font/google";
 // const inter = Inter({ subsets: ["latin"] });
@@ -53,15 +56,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <CSPostHogProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Suspense fallback={null}>
+              <PostHogPageView />
+            </Suspense>
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </CSPostHogProvider>
       </body>
     </html>
   );
