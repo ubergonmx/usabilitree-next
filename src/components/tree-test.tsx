@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,18 +33,17 @@ interface TreeTestProps {
   config: TreeTestConfig;
 }
 
-const Navigation = ({
-  items,
-  onSelect,
-  resetKey,
-}: {
+interface NavigationProps {
   items: Item[];
-  onSelect: (link: string, path: string) => void;
+  onSelect: (link: string) => void;
   resetKey: number;
-}) => {
+  pathTaken: string;
+  setPathTaken: Dispatch<SetStateAction<string>>;
+}
+
+const Navigation = ({ items, onSelect, resetKey, pathTaken, setPathTaken }: NavigationProps) => {
   const [treeState, setTreeState] = useState<Item[]>([]);
   const [selectedLink, setSelectedLink] = useState<string>();
-  const [pathTaken, setPathTaken] = useState<string>("");
 
   useEffect(() => {
     // Initialize tree with expansion states
@@ -59,7 +58,7 @@ const Navigation = ({
     setTreeState(initializeTree(items));
     setSelectedLink("");
     setPathTaken(items.some((item) => item.name === "Home") ? "/home" : "");
-  }, [resetKey, items]);
+  }, [resetKey, items, setPathTaken]);
 
   const updatePathTaken = (prev: string, name: string) => {
     const sanitizedPath = sanitizeTreeTestLink(name);
@@ -163,7 +162,7 @@ const Navigation = ({
                   className="bg-[#72FFA4] text-black hover:bg-[#00D9C2]"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSelect(item.link ?? "", pathTaken);
+                    onSelect(item.link ?? "");
                   }}
                 >
                   I&apos;d find it here
@@ -205,9 +204,8 @@ export function TreeTestComponent({ config }: TreeTestProps) {
     setStartTime(Date.now());
   };
 
-  const handleSelection = (link: string, path: string) => {
+  const handleSelection = (link: string) => {
     setSelectedLink(link);
-    setPathTaken(path);
     setShowConfidenceModal(true);
   };
 
@@ -251,7 +249,6 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       setShowConfidenceModal(false);
       setConfidenceLevel(undefined);
       setSelectedLink(undefined);
-      setPathTaken("");
       moveToNextTask();
     } catch (error) {
       console.error("Error submitting task result:", error);
@@ -270,9 +267,9 @@ export function TreeTestComponent({ config }: TreeTestProps) {
 
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
         successful: false,
-        directPathTaken: !pathTaken, // true if user didn't touch the nav menu (direct skip)
+        directPathTaken: !pathTaken || pathTaken === "/home", // true if user didn't touch the nav menu (direct skip)
         completionTimeSeconds: duration,
-        pathTaken: pathTaken,
+        pathTaken: pathTaken !== "/home" ? pathTaken : "",
         skipped: true,
       });
     }
@@ -287,6 +284,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       setStarted(false);
       setResetKey((prev) => prev + 1);
       setStartTime(undefined);
+      setPathTaken("");
     } else {
       router.push("completed");
     }
@@ -355,7 +353,13 @@ export function TreeTestComponent({ config }: TreeTestProps) {
                 </Button>
               </div>
             ) : (
-              <Navigation items={config.tree} onSelect={handleSelection} resetKey={resetKey} />
+              <Navigation
+                items={config.tree}
+                onSelect={handleSelection}
+                resetKey={resetKey}
+                pathTaken={pathTaken}
+                setPathTaken={setPathTaken}
+              />
             )}
             {!started && currentTask === config.tasks.length && (
               <div className="mt-4">
