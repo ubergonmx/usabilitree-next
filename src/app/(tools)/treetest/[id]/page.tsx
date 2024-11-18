@@ -12,9 +12,5 @@ export default async function Page({ params }: { params: { id: string } }) {
     return redirect(Paths.Dashboard);
   }
 
-  return (
-    <div>
-      <TestLivePage params={params} />
-    </div>
-  );
+  return <TestLivePage params={params} />;
 }

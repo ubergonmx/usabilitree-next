@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { Card } from "@/components/ui/card";
-import { loadWelcomeMessage } from "@/lib/treetest/actions";
+import { loadWelcomeMessage, checkStudyCompletion } from "@/lib/treetest/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const instructions = `# Instructions
@@ -21,6 +21,12 @@ _This is not a test of your ability, there are no right or wrong answers._
   
 **That's it, let's get started!**`;
 
+const completedMessage = `# Thank You!
+
+This study has been completed. We have collected all the responses we need.
+
+Thank you for your interest in participating.`;
+
 const INSTRUCTION_DELAY_MS = 5000;
 
 const TestLivePage = ({ params }: { params: { id: string } }) => {
@@ -28,14 +34,18 @@ const TestLivePage = ({ params }: { params: { id: string } }) => {
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [canStart, setCanStart] = useState(false);
+  const [isCompleted, setIsCompleted] = useState<boolean | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    loadWelcomeMessage(params.id)
-      .then(setWelcomeMessage)
+    Promise.all([loadWelcomeMessage(params.id), checkStudyCompletion(params.id)])
+      .then(([message, completed]) => {
+        setWelcomeMessage(message);
+        setIsCompleted(completed);
+      })
       .catch((err) => {
-        console.error("Failed to load welcome message:", err);
-        setError("Failed to load welcome message");
+        console.error("Failed to load study data:", err);
+        setError("Failed to load study data");
       });
   }, [params.id]);
 
@@ -56,6 +66,16 @@ const TestLivePage = ({ params }: { params: { id: string } }) => {
       setShowInstructions(true);
     }
   };
+
+  if (isCompleted) {
+    return (
+      <div className="container mx-auto max-w-2xl py-8">
+        <Card className="p-6">
+          <MarkdownPreview content={completedMessage} />
+        </Card>
+      </div>
+    );
+  }
 
   if (error) {
     return (

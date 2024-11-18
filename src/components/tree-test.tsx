@@ -37,11 +37,10 @@ interface NavigationProps {
   items: Item[];
   onSelect: (link: string) => void;
   resetKey: number;
-  pathTaken: string;
   setPathTaken: Dispatch<SetStateAction<string>>;
 }
 
-const Navigation = ({ items, onSelect, resetKey, pathTaken, setPathTaken }: NavigationProps) => {
+const Navigation = ({ items, onSelect, resetKey, setPathTaken }: NavigationProps) => {
   const [treeState, setTreeState] = useState<Item[]>([]);
   const [selectedLink, setSelectedLink] = useState<string>();
 
@@ -357,7 +356,6 @@ export function TreeTestComponent({ config }: TreeTestProps) {
                 items={config.tree}
                 onSelect={handleSelection}
                 resetKey={resetKey}
-                pathTaken={pathTaken}
                 setPathTaken={setPathTaken}
               />
             )}
