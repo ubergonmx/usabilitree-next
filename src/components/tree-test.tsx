@@ -16,6 +16,8 @@ import { storeTreeTaskResult } from "@/lib/treetest/actions";
 import { useRouter } from "next/navigation";
 import { sanitizeTreeTestLink } from "@/lib/utils";
 import { Item, ItemWithExpanded, TreeTestConfig } from "@/lib/types/tree-test";
+import { toast } from "sonner";
+import { ExclamationTriangleIcon } from "./icons";
 
 const confidenceLevels = [
   { value: 1, label: "Strongly Disagree" },
@@ -195,6 +197,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
   const [selectedLink, setSelectedLink] = useState<string>();
   const [confidenceLevel, setConfidenceLevel] = useState<string>();
   const [pathTaken, setPathTaken] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const startTest = () => {
@@ -209,41 +212,55 @@ export function TreeTestComponent({ config }: TreeTestProps) {
   };
 
   const handleConfidenceSubmit = async () => {
-    if (!selectedLink) return;
+    if (!selectedLink || isSubmitting) return;
 
-    if (!config.preview && config.participantId) {
-      const endTime = Date.now();
-      const duration = (endTime - startTime!) / 1000;
+    try {
+      setIsSubmitting(true);
 
-      // Check if the selected link matches any of the correct answers
-      const correctAnswers = config.tasks[currentTask].link.split(",").map((a) => a.trim());
-      const isSuccessful = correctAnswers.includes(selectedLink);
+      if (!config.preview && config.participantId) {
+        const endTime = Date.now();
+        const duration = (endTime - startTime!) / 1000;
 
-      await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
-        successful: isSuccessful,
-        directPathTaken: selectedLink === pathTaken,
-        completionTimeSeconds: duration,
-        confidenceRating: confidenceLevel ? parseInt(confidenceLevel) : undefined,
-        pathTaken: pathTaken,
-        skipped: false,
+        // Check if the selected link matches any of the correct answers
+        const correctAnswers = config.tasks[currentTask].link.split(",").map((a) => a.trim());
+        const isSuccessful = correctAnswers.includes(selectedLink);
+
+        await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
+          successful: isSuccessful,
+          directPathTaken: selectedLink === pathTaken,
+          completionTimeSeconds: duration,
+          confidenceRating: confidenceLevel ? parseInt(confidenceLevel) : undefined,
+          pathTaken: pathTaken,
+          skipped: false,
+        });
+      } else {
+        // simulate the storeTreeTaskResult function with delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      setResults((prev) => [
+        ...prev,
+        {
+          taskId: config.tasks[currentTask].id,
+          selectedLink,
+          duration: (Date.now() - (startTime ?? Date.now())) / 1000,
+          confidenceLevel,
+        },
+      ]);
+
+      setShowConfidenceModal(false);
+      setConfidenceLevel(undefined);
+      setSelectedLink(undefined);
+      setPathTaken("");
+      moveToNextTask();
+    } catch (error) {
+      console.error("Error submitting task result:", error);
+      toast("Error submitting task result", {
+        icon: <ExclamationTriangleIcon className="h-5 w-5 text-destructive" />,
       });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setResults((prev) => [
-      ...prev,
-      {
-        taskId: config.tasks[currentTask].id,
-        selectedLink,
-        duration: (Date.now() - (startTime ?? Date.now())) / 1000,
-        confidenceLevel,
-      },
-    ]);
-
-    setShowConfidenceModal(false);
-    setConfidenceLevel(undefined);
-    setSelectedLink(undefined);
-    setPathTaken("");
-    moveToNextTask();
   };
 
   const skipTask = async () => {
@@ -269,6 +286,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       setCurrentTask((prev) => prev + 1);
       setStarted(false);
       setResetKey((prev) => prev + 1);
+      setStartTime(undefined);
     } else {
       router.push("completed");
     }
@@ -313,7 +331,10 @@ export function TreeTestComponent({ config }: TreeTestProps) {
                   Task {currentTask + 1} of {config.tasks.length}{" "}
                   {config.preview ? "(Preview)" : ""}
                 </h2>
-                <p className="mt-2">{config.tasks[currentTask].description ?? "[Error occured]"}</p>
+                <p className="mt-2">
+                  {config.tasks[currentTask].description ??
+                    "[Error occurred - please report this to the study administrator]"}
+                </p>
               </div>
               {started && (
                 <button
@@ -345,7 +366,11 @@ export function TreeTestComponent({ config }: TreeTestProps) {
           </div>
           <Dialog
             open={showConfidenceModal && config.requireConfidenceRating}
-            onOpenChange={setShowConfidenceModal}
+            onOpenChange={(open) => {
+              if (!isSubmitting) {
+                setShowConfidenceModal(open);
+              }
+            }}
           >
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
@@ -384,8 +409,12 @@ export function TreeTestComponent({ config }: TreeTestProps) {
                 <span>{confidenceLevels[0].label}</span>
                 <span>{confidenceLevels[6].label}</span>
               </div>
-              <Button onClick={handleConfidenceSubmit} disabled={!confidenceLevel} className="mt-4">
-                Submit and Continue
+              <Button
+                onClick={handleConfidenceSubmit}
+                disabled={!confidenceLevel || isSubmitting}
+                className="mt-4"
+              >
+                {isSubmitting ? "Submitting..." : "Submit and Continue"}
               </Button>
             </DialogContent>
           </Dialog>
