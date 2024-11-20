@@ -18,11 +18,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getTasksStats, type TaskStats } from "@/lib/treetest/results-actions";
-import { ChevronRightIcon, CheckCircledIcon } from "@/components/icons";
+import { ChevronRightIcon, CheckCircledIcon, XIcon, SearchIcon } from "@/components/icons";
 import { PieChart } from "@/components/ui/pie-chart";
 import { BoxPlot } from "@/components/ui/box-plot";
 import { Button } from "@/components/ui/button";
 import { Item } from "@/lib/types/tree-test";
+import { Input } from "@/components/ui/input";
 
 const confidenceLevels = [
   { value: 1, label: "Strongly Disagree" },
@@ -447,6 +448,7 @@ function ConfidenceRatingsTable({ ratings }: { ratings: TaskStats["stats"]["conf
 export function TasksTab({ studyId }: { studyId: string }) {
   const [tasks, setTasks] = useState<TaskStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -463,9 +465,28 @@ export function TasksTab({ studyId }: { studyId: string }) {
     loadTasks();
   }, [studyId]);
 
+  const filteredTasks = tasks.filter((task) => {
+    if (!search) return true;
+
+    const searchLower = search.toLowerCase();
+
+    // If search is a number, only match task numbers
+    if (/^\d+$/.test(search)) {
+      return `task ${tasks.indexOf(task) + 1}`.includes(search);
+    }
+
+    return (
+      task.description.toLowerCase().includes(searchLower) ||
+      task.expectedAnswer.toLowerCase().includes(searchLower)
+    );
+  });
+
   if (loading) {
     return (
       <div className="space-y-4">
+        <div className="relative max-w-sm">
+          <Skeleton className="h-10 w-full" />
+        </div>
         {[...Array(3)].map((_, i) => (
           <div key={i} className="space-y-4 rounded-lg border px-6 py-4">
             {/* Task Header */}
@@ -498,88 +519,115 @@ export function TasksTab({ studyId }: { studyId: string }) {
   }
 
   return (
-    <Accordion type="single" collapsible className="space-y-4">
-      {tasks.map((task, index) => (
-        <AccordionItem key={task.id} value={task.id} className="rounded-lg border px-6">
-          <AccordionTrigger className="hover:no-underline">
-            <div className="flex flex-col items-start gap-4">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-muted-foreground">Task {index + 1}</span>
-                <h3 className="font-semibold">{task.description}</h3>
+    <div className="space-y-4">
+      <div className="relative max-w-sm">
+        <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+          <SearchIcon className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <Input
+          placeholder="Search by Task Number, Description, or Expected Answer..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9 pr-9"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+          >
+            <XIcon className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      <Accordion type="single" collapsible className="space-y-4">
+        {filteredTasks.map((task, index) => (
+          <AccordionItem key={task.id} value={task.id} className="rounded-lg border px-6">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex flex-col items-start gap-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Task {index + 1}
+                  </span>
+                  <h3 className="font-semibold">{task.description}</h3>
+                </div>
+                <div className="space-y-2">
+                  {task.expectedAnswer.split(",").map((answer, answerIndex) => (
+                    <div key={answerIndex} className="flex items-center gap-2">
+                      <CheckCircledIcon className="h-4 w-4 text-green-500" />
+                      <Breadcrumb>
+                        <BreadcrumbList>
+                          {answer
+                            .trim()
+                            .split("/")
+                            .map((item, i) => (
+                              <BreadcrumbItem key={i}>
+                                {i > 0 && <ChevronRightIcon className="h-4 w-4" />}
+                                {item}
+                              </BreadcrumbItem>
+                            ))}
+                        </BreadcrumbList>
+                      </Breadcrumb>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-2">
-                {task.expectedAnswer.split(",").map((answer, answerIndex) => (
-                  <div key={answerIndex} className="flex items-center gap-2">
-                    <CheckCircledIcon className="h-4 w-4 text-green-500" />
-                    <Breadcrumb>
-                      <BreadcrumbList>
-                        {answer
-                          .trim()
-                          .split("/")
-                          .map((item, i) => (
-                            <BreadcrumbItem key={i}>
-                              {i > 0 && <ChevronRightIcon className="h-4 w-4" />}
-                              {item}
-                            </BreadcrumbItem>
-                          ))}
-                      </BreadcrumbList>
-                    </Breadcrumb>
+            </AccordionTrigger>
+            <AccordionContent className="pt-4">
+              <div className="space-y-6">
+                <TaskBreakdownPie breakdown={task.stats.breakdown} score={task.stats.score} />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Success Rate</span>
+                    <span className="text-sm text-muted-foreground">
+                      ±{task.stats.success.margin}% margin of error
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="pt-4">
-            <div className="space-y-6">
-              <TaskBreakdownPie breakdown={task.stats.breakdown} score={task.stats.score} />
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Success Rate</span>
-                  <span className="text-sm text-muted-foreground">
-                    ±{task.stats.success.margin}% margin of error
-                  </span>
+                  <StatBar
+                    value={task.stats.success.rate}
+                    margin={task.stats.success.margin}
+                    color="bg-green-bar"
+                  />
                 </div>
-                <StatBar
-                  value={task.stats.success.rate}
-                  margin={task.stats.success.margin}
-                  color="bg-green-bar"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Directness Score</span>
-                  <span className="text-sm text-muted-foreground">
-                    ±{task.stats.directness.margin}% margin of error
-                  </span>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Directness Score</span>
+                    <span className="text-sm text-muted-foreground">
+                      ±{task.stats.directness.margin}% margin of error
+                    </span>
+                  </div>
+                  <StatBar
+                    value={task.stats.directness.rate}
+                    margin={task.stats.directness.margin}
+                    color="bg-blue-bar"
+                  />
                 </div>
-                <StatBar
-                  value={task.stats.directness.rate}
-                  margin={task.stats.directness.margin}
-                  color="bg-blue-bar"
-                />
+                <TimeStats stats={task.stats.time} maxTimeLimit={task.maxTimeSeconds} />
+                <div className="border-t pt-4">
+                  <FirstClickedParentTable parentClicks={task.stats.parentClicks} />
+                </div>
+                <div className="border-t pt-4">
+                  <IncorrectDestinationsTable
+                    destinations={task.stats.incorrectDestinations}
+                    parsedTree={task.parsedTree}
+                  />
+                </div>
+                <div className="border-t pt-4">
+                  <ConfidenceRatingsTable ratings={task.stats.confidenceRatings} />
+                </div>
               </div>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
 
-              <TimeStats stats={task.stats.time} maxTimeLimit={task.maxTimeSeconds} />
-
-              <div className="border-t pt-4">
-                <FirstClickedParentTable parentClicks={task.stats.parentClicks} />
-              </div>
-
-              <div className="border-t pt-4">
-                <IncorrectDestinationsTable
-                  destinations={task.stats.incorrectDestinations}
-                  parsedTree={task.parsedTree}
-                />
-              </div>
-
-              <div className="border-t pt-4">
-                <ConfidenceRatingsTable ratings={task.stats.confidenceRatings} />
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
+      {filteredTasks.length === 0 && (
+        <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed">
+          <div className="text-center">
+            <h3 className="text-lg font-medium">No tasks found</h3>
+            <p className="text-sm text-muted-foreground">Try adjusting your search query</p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
