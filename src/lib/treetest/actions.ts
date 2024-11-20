@@ -365,3 +365,19 @@ export async function getStudyDetails(studyId: string): Promise<{ title: string;
     };
   }
 }
+
+export async function checkStudyCompletion(id: string): Promise<boolean> {
+  try {
+    const [config] = await db
+      .select({
+        status: studies.status,
+      })
+      .from(studies)
+      .where(eq(studies.id, id));
+
+    return config?.status === "completed";
+  } catch (error) {
+    console.error("Failed to load welcome message:", error);
+    throw new Error("Failed to load welcome message");
+  }
+}
