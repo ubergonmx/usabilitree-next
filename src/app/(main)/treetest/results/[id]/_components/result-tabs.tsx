@@ -10,6 +10,7 @@ import {
   CopyIcon,
   TrashIcon,
   FlagIcon,
+  EyeOpenIcon,
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +29,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { getStudyTitle, updateStudyStatus, deleteStudy } from "@/lib/treetest/actions";
+import { updateStudyStatus, deleteStudy, getStudyDetails } from "@/lib/treetest/actions";
 import { OverviewTab } from "./overview-tab";
 import { TasksTab } from "./tasks-tab";
 import { SharingTab } from "./sharing-tab";
@@ -46,9 +47,15 @@ export default function ResultTabs({ params, userEmail, isOwner }: ResultTabsPro
   const router = useRouter();
   const [title, setTitle] = useState("Study Results");
   const [isFinishing, setIsFinishing] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
-    getStudyTitle(params.id).then(setTitle).catch(console.error);
+    getStudyDetails(params.id)
+      .then(({ title, status }) => {
+        setTitle(title);
+        setIsCompleted(status === "completed");
+      })
+      .catch(console.error);
   }, [params.id]);
 
   const handleCopyLink = () => {
@@ -106,38 +113,54 @@ export default function ResultTabs({ params, userEmail, isOwner }: ResultTabsPro
 
         {isOwner && (
           <div className="flex items-center gap-2">
-            <AlertDialog>
-              <Button variant="outline" size="sm" className="gap-2" asChild>
-                <AlertDialogTrigger>
-                  <FlagIcon className="h-4 w-4" /> Finish
-                </AlertDialogTrigger>
-              </Button>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Finish Study?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will mark your study as completed. No more participants will be able to
-                    take the test.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleFinish}
-                    disabled={isFinishing}
-                    className="gap-2"
-                  >
-                    {isFinishing ? (
-                      <>Finishing...</>
-                    ) : (
-                      <>
-                        <FlagIcon className="h-4 w-4" /> Finish Study
-                      </>
-                    )}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {!isCompleted ? (
+              <AlertDialog>
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <AlertDialogTrigger>
+                    <FlagIcon className="h-4 w-4" /> Finish
+                  </AlertDialogTrigger>
+                </Button>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Finish Study?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will mark your study as completed. No more participants will be able to
+                      take the test.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleFinish}
+                      disabled={isFinishing}
+                      className="gap-2"
+                    >
+                      {isFinishing ? (
+                        <>Finishing...</>
+                      ) : (
+                        <>
+                          <FlagIcon className="h-4 w-4" /> Finish Study
+                        </>
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <FlagIcon className="h-4 w-4" />
+                Study completed
+              </div>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => window.open(`/treetest/preview/${params.id}`, "_blank")}
+            >
+              <EyeOpenIcon className="h-4 w-4" /> Preview
+            </Button>
 
             <AlertDialog>
               <Button variant="ghost" size="sm" className="text-destructive" asChild>

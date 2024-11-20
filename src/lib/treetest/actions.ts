@@ -342,33 +342,26 @@ export async function updateParticipantCompletion(participantId: string) {
   }
 }
 
-export async function getStudyTitle(studyId: string): Promise<string> {
+export async function getStudyDetails(studyId: string): Promise<{ title: string; status: string }> {
   try {
     const study = await db
-      .select({ title: studies.title })
+      .select({
+        title: studies.title,
+        status: studies.status,
+      })
       .from(studies)
       .where(eq(studies.id, studyId))
       .get();
 
-    return study?.title || "Study Results";
+    return {
+      title: study?.title || "Study Results",
+      status: study?.status || "draft",
+    };
   } catch (error) {
-    console.error("Failed to get study title:", error);
-    return "Study Results";
-  }
-}
-
-export async function checkStudyCompletion(id: string): Promise<boolean> {
-  try {
-    const [config] = await db
-      .select({
-        status: studies.status,
-      })
-      .from(studies)
-      .where(eq(studies.id, id));
-
-    return config?.status === "completed";
-  } catch (error) {
-    console.error("Failed to load welcome message:", error);
-    throw new Error("Failed to load welcome message");
+    console.error("Failed to get study details:", error);
+    return {
+      title: "Study Results",
+      status: "draft",
+    };
   }
 }
