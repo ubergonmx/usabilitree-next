@@ -540,13 +540,13 @@ export function TasksTab({ studyId }: { studyId: string }) {
         )}
       </div>
       <Accordion type="single" collapsible className="space-y-4">
-        {filteredTasks.map((task, index) => (
+        {filteredTasks.map((task) => (
           <AccordionItem key={task.id} value={task.id} className="rounded-lg border px-6">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex flex-col items-start gap-4">
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-medium text-muted-foreground">
-                    Task {index + 1}
+                    Task {task.index + 1}
                   </span>
                   <h3 className="font-semibold">{task.description}</h3>
                 </div>
