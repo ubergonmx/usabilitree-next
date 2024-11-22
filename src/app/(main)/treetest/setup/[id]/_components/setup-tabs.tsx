@@ -31,6 +31,7 @@ import {
   deleteStudy,
   saveStudyData,
   loadStudyData,
+  getStudyDetails,
 } from "@/lib/treetest/actions";
 import { useRouter } from "next/navigation";
 import { GeneralTab } from "./general-tab";
@@ -69,11 +70,15 @@ export default function SetupTabs({ params }: SetupTabsProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [status, setStatus] = useState("draft");
 
   // Load initial data
   useEffect(() => {
-    loadStudyData(params.id)
-      .then(setFormData)
+    Promise.all([loadStudyData(params.id), getStudyDetails(params.id)])
+      .then(([data, details]) => {
+        setFormData(data);
+        setStatus(details.status);
+      })
       .catch((error) => {
         console.error("Failed to load study data:", error);
         toast.error("Failed to load study data");
@@ -179,40 +184,46 @@ export default function SetupTabs({ params }: SetupTabsProps) {
             )}
           </Button>
 
-          <AlertDialog>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              disabled={!canLaunchOrPreview()}
-              asChild
-            >
-              <AlertDialogTrigger>
-                <RocketIcon className="h-4 w-4" /> Launch
-              </AlertDialogTrigger>
-            </Button>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Launch Study?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will make your study live and available to participants. You won&apos;t be
-                  able to modify it after launching.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLaunch} disabled={isLaunching} className="gap-2">
-                  {isLaunching ? (
-                    <>Launching...</>
-                  ) : (
-                    <>
-                      <RocketIcon className="h-4 w-4" /> Launch Study
-                    </>
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {status === "draft" && (
+            <AlertDialog>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                disabled={!canLaunchOrPreview()}
+                asChild
+              >
+                <AlertDialogTrigger>
+                  <RocketIcon className="h-4 w-4" /> Launch
+                </AlertDialogTrigger>
+              </Button>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Launch Study?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will make your study live and available to participants. You won&apos;t be
+                    able to modify it after launching.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleLaunch}
+                    disabled={isLaunching}
+                    className="gap-2"
+                  >
+                    {isLaunching ? (
+                      <>Launching...</>
+                    ) : (
+                      <>
+                        <RocketIcon className="h-4 w-4" /> Launch Study
+                      </>
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
 
           <Button
             variant="outline"
