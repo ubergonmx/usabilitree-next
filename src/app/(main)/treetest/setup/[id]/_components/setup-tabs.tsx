@@ -135,6 +135,21 @@ export default function SetupTabs({ params }: SetupTabsProps) {
       return;
     }
 
+    if (hasUnsavedChanges) {
+      setIsSaving(true);
+      try {
+        await saveStudyData(params.id, formData);
+        toast.success("Study saved successfully");
+      } catch (error) {
+        console.error("Failed to save study:", error);
+        toast.error("Failed to save study");
+        return;
+      } finally {
+        setIsSaving(false);
+        setHasUnsavedChanges(false);
+      }
+    }
+
     setIsLaunching(true);
     try {
       await updateStudyStatus(params.id, "active");
@@ -148,6 +163,30 @@ export default function SetupTabs({ params }: SetupTabsProps) {
     } finally {
       setIsLaunching(false);
     }
+  };
+
+  const handlePreview = async () => {
+    if (!canLaunchOrPreview()) {
+      toast.error("Please add a title, tree structure, and at least one task before previewing");
+      return;
+    }
+
+    if (hasUnsavedChanges) {
+      setIsSaving(true);
+      try {
+        await saveStudyData(params.id, formData);
+        toast.success("Study saved successfully");
+      } catch (error) {
+        console.error("Failed to save study:", error);
+        toast.error("Failed to save study");
+        return;
+      } finally {
+        setIsSaving(false);
+        setHasUnsavedChanges(false);
+      }
+    }
+
+    window.open(`/treetest/preview/${params.id}`, "_blank");
   };
 
   return (
@@ -209,11 +248,13 @@ export default function SetupTabs({ params }: SetupTabsProps) {
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleLaunch}
-                    disabled={isLaunching}
+                    disabled={isLaunching || isSaving}
                     className="gap-2"
                   >
                     {isLaunching ? (
                       <>Launching...</>
+                    ) : isSaving ? (
+                      <>Saving...</>
                     ) : (
                       <>
                         <RocketIcon className="h-4 w-4" /> Launch Study
@@ -229,18 +270,11 @@ export default function SetupTabs({ params }: SetupTabsProps) {
             variant="outline"
             size="sm"
             className="gap-2"
-            onClick={() => {
-              if (!canLaunchOrPreview()) {
-                toast.error(
-                  "Please add a title, tree structure, and at least one task before previewing"
-                );
-                return;
-              }
-              window.open(`/treetest/preview/${params.id}`, "_blank");
-            }}
-            disabled={!canLaunchOrPreview()}
+            onClick={handlePreview}
+            disabled={!canLaunchOrPreview() || isSaving}
           >
-            <EyeOpenIcon className="h-4 w-4" /> Preview
+            <EyeOpenIcon className="h-4 w-4" />
+            Preview
           </Button>
 
           <AlertDialog>
