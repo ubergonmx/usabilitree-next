@@ -6,6 +6,7 @@ import { ArrowRight } from "@/components/icons";
 import { DotPatternBackground } from "../_components/dot-pattern-background";
 import Link from "next/link";
 import { Paths } from "@/lib/constants";
+import { User } from "@/db/schema";
 
 const ease = [0.16, 1, 0.3, 1];
 
@@ -72,14 +73,14 @@ function HeroTitles() {
   );
 }
 
-function HeroCTA() {
+function HeroCTA({ hasUser }: { hasUser: boolean }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 1, duration: 0.8, ease }}
     >
-      <Link href={Paths.Dashboard}>
+      <Link href={hasUser ? Paths.Dashboard : Paths.Login}>
         <Button variant="expandIcon" Icon={ArrowRight} iconPlacement="right" className="pl-6">
           Get Started
         </Button>
@@ -88,7 +89,7 @@ function HeroCTA() {
   );
 }
 
-export function HeroSection() {
+export function HeroSection({ user }: { user: User | undefined }) {
   return (
     <section id="hero">
       <div className="relative flex w-full flex-col items-center justify-start px-4 pt-16 sm:px-6 sm:pt-24 md:pt-32 lg:px-8">
@@ -96,7 +97,7 @@ export function HeroSection() {
         <div className="container relative z-10 px-4 md:px-6">
           <div className="flex flex-col items-center space-y-8 pb-20 text-center">
             <HeroTitles />
-            <HeroCTA />
+            <HeroCTA hasUser={!!user} />
           </div>
         </div>
       </div>
