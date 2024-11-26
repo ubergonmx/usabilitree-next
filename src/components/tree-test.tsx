@@ -202,6 +202,15 @@ export function TreeTestComponent({ config }: TreeTestProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    // Scroll to top once the page is loaded
+    scrollToTop();
+  }, []);
+
   const startTest = () => {
     setStarted(true);
     setStartTime(Date.now());
@@ -292,6 +301,7 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       setResetKey((prev) => prev + 1);
       setStartTime(undefined);
       setPathTaken("");
+      scrollToTop();
     } else {
       router.push("completed");
     }
