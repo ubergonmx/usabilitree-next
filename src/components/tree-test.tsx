@@ -45,18 +45,22 @@ const Navigation = ({ items, onSelect, resetKey, setPathTaken }: NavigationProps
   const [selectedLink, setSelectedLink] = useState<string>();
 
   useEffect(() => {
+    // Check if there's only one root item containing "Home"
+    const isOnlyRootHome = items.length === 1 && items[0].name.toLowerCase().includes("home");
+    const initialRootLink = isOnlyRootHome ? sanitizeTreeTestLink(items[0].name) : "home";
+
     // Initialize tree with expansion states
     const initializeTree = (items: Item[]): ItemWithExpanded[] => {
       return items.map((item) => ({
         ...item,
-        isExpanded: item.name === "Home",
+        isExpanded: isOnlyRootHome && item.name.toLowerCase().includes("home"),
         children: item.children ? initializeTree(item.children) : undefined,
       }));
     };
 
     setTreeState(initializeTree(items));
     setSelectedLink("");
-    setPathTaken(items.some((item) => item.name === "Home") ? "/home" : "");
+    setPathTaken(`/${initialRootLink || ""}`);
   }, [resetKey, items, setPathTaken]);
 
   const updatePathTaken = (prev: string, name: string) => {
@@ -264,11 +268,15 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       const endTime = Date.now();
       const duration = (endTime - startTime!) / 1000;
 
+      const isOnlyRootHome =
+        config.tree.length === 1 && config.tree[0].name.toLowerCase().includes("home");
+      const rootLink = isOnlyRootHome ? sanitizeTreeTestLink(config.tree[0].name) : "";
+
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
         successful: false,
-        directPathTaken: !pathTaken || pathTaken === "/home", // true if user didn't touch the nav menu (direct skip)
+        directPathTaken: !pathTaken || pathTaken === `/${rootLink}`, // true if user didn't touch the nav menu (direct skip)
         completionTimeSeconds: duration,
-        pathTaken: pathTaken !== "/home" ? pathTaken : "",
+        pathTaken: pathTaken !== `/${rootLink}` ? pathTaken : "",
         skipped: true,
       });
     }
