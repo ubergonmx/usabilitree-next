@@ -21,7 +21,9 @@ export function Login() {
         <CardTitle>
           <Logo />
         </CardTitle>
-        <CardDescription>Log in to your account to access your dashboard</CardDescription>
+        <CardDescription className="text-center">
+          Log in to your account to access your dashboard
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap justify-between gap-2 sm:gap-0">

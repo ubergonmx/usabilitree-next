@@ -21,7 +21,7 @@ export function Signup() {
         <CardTitle>
           <Logo />
         </CardTitle>
-        <CardDescription>Sign up to start using the app</CardDescription>
+        <CardDescription className="text-center">Sign up to start using the app</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap justify-between gap-2 sm:gap-0">
