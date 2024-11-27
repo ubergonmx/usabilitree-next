@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TreeNode, StudyFormData } from "@/lib/types/tree-test";
 import { sanitizeTreeTestLink } from "@/lib/utils";
+import { InfoCircledIcon } from "@/components/icons";
 
 interface TreeTabProps {
   data: StudyFormData;
@@ -148,6 +149,16 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
     <div className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="tree-structure">Tree Structure</Label>
+        <Alert>
+          <InfoCircledIcon className="h-4 w-4" />
+          <AlertTitle>Important Note</AlertTitle>
+          <AlertDescription>
+            The root level item should contain the word &quot;Home&quot; (e.g., &quot;Home&quot;,
+            &quot;Homepage&quot;, &quot;Home - City of Paranaque&quot;) for the system to recognize
+            it as the home page. This will be automatically expanded when participants start the
+            test.
+          </AlertDescription>
+        </Alert>
         <Textarea
           id="tree-structure"
           value={data.tree.structure}
@@ -157,7 +168,7 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
               tree: { ...data.tree, structure: e.target.value },
             })
           }
-          placeholder={`Enter tree structure (use commas for indentation)\nExample:\nHome\n,Products\n,,Electronics\n,,Clothing\n,About Us`}
+          placeholder={`Enter tree structure (use commas for indentation)\nExample:\nHome - City of Paranaque\n,Services\n,,Business Permits\n,,Health Services\n,About Us`}
           className="min-h-[300px] font-mono"
         />
       </div>
