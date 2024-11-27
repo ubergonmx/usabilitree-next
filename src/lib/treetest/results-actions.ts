@@ -10,6 +10,7 @@ import {
 } from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { Item, ParentClickStats, TreeTestOverviewStats } from "../types/tree-test";
+import { sanitizeTreeTestLink } from "../utils";
 
 export async function getStudyOverviewStats(studyId: string): Promise<TreeTestOverviewStats> {
   try {
@@ -262,10 +263,11 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
 
         // Parse the tree to determine if "home" is the only root child
         const tree = JSON.parse(task.parsedTree) as Item[];
-        const hasOnlyHomeRoot = tree.length === 1 && tree[0].name.toLowerCase() === "home";
+        const hasOnlyHomeRoot = tree.length === 1 && tree[0].name.toLowerCase().includes("home");
 
         // Process paths to get parent click statistics
         const parentClickStats = new Map<string, ParentClickStats>();
+        const homeRoot = hasOnlyHomeRoot ? sanitizeTreeTestLink(tree[0].name) : "";
 
         pathResults.forEach((result) => {
           const pathParts = result.pathTaken.split("/").filter(Boolean);
@@ -273,11 +275,13 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
 
           // Get parent path based on tree structure
           const parentPath =
-            hasOnlyHomeRoot && pathParts.length > 1 ? `/home/${pathParts[1]}` : `/${pathParts[0]}`;
+            hasOnlyHomeRoot && pathParts.length > 1
+              ? `/${homeRoot}/${pathParts[1]}`
+              : `/${pathParts[0]}`;
 
           const expectedParentPath =
             hasOnlyHomeRoot && expectedParts.length > 1
-              ? `/home/${expectedParts[1]}`
+              ? `/${homeRoot}/${expectedParts[1]}`
               : `/${expectedParts[0]}`;
 
           if (!parentClickStats.has(parentPath)) {
