@@ -34,28 +34,34 @@ const CompletedPage = ({ params }: { params: { id: string } }) => {
 
   if (error) {
     return (
-      <div className="container mx-auto max-w-2xl py-8">
-        <Card className="p-6">
-          <div className="text-center text-red-500">{error}</div>
-        </Card>
-      </div>
+      <>
+        <div className="h-1 bg-theme"></div>
+        <div className="container mx-auto max-w-2xl py-8">
+          <Card className="p-6">
+            <div className="text-center text-red-500">{error}</div>
+          </Card>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-2xl py-8">
-      <Card className="p-6">
-        {completionMessage === null ? (
-          <div className="space-y-4">
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-        ) : (
-          <MarkdownPreview content={completionMessage} />
-        )}
-      </Card>
-    </div>
+    <>
+      <div className="h-1 bg-theme"></div>
+      <div className="container mx-auto max-w-2xl py-8">
+        <Card className="p-6">
+          {completionMessage === null ? (
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          ) : (
+            <MarkdownPreview content={completionMessage} />
+          )}
+        </Card>
+      </div>
+    </>
   );
 };
 

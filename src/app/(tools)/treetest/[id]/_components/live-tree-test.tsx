@@ -79,51 +79,57 @@ const TestLivePage = ({ params }: { params: { id: string } }) => {
 
   if (error) {
     return (
-      <div className="container mx-auto max-w-2xl py-8">
-        <Card className="p-6">
-          <div className="text-center text-red-500">{error}</div>
-        </Card>
-      </div>
+      <>
+        <div className="h-1 bg-theme"></div>
+        <div className="container mx-auto max-w-2xl py-8">
+          <Card className="p-6">
+            <div className="text-center text-red-500">{error}</div>
+          </Card>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-2xl py-8">
-      <Card className="p-6">
-        {!showInstructions ? (
-          <div className="space-y-6">
-            {welcomeMessage === null ? (
-              <div className="space-y-4">
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
-              </div>
-            ) : (
-              <MarkdownPreview content={welcomeMessage} />
-            )}
-            <div className="flex justify-end">
-              <Button onClick={handleNextClick} disabled={welcomeMessage === null}>
-                Next
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <MarkdownPreview content={instructions} />
-            <div className="flex items-center justify-end gap-4">
-              {!canStart && (
-                <p className="text-sm text-muted-foreground">
-                  Please read the instructions carefully...
-                </p>
+    <>
+      <div className="h-1 bg-theme"></div>
+      <div className="container mx-auto max-w-2xl py-8">
+        <Card className="p-6">
+          {!showInstructions ? (
+            <div className="space-y-6">
+              {welcomeMessage === null ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ) : (
+                <MarkdownPreview content={welcomeMessage} />
               )}
-              <Button onClick={handleNextClick} disabled={!canStart}>
-                Start Test
-              </Button>
+              <div className="flex justify-end">
+                <Button onClick={handleNextClick} disabled={welcomeMessage === null}>
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
-      </Card>
-    </div>
+          ) : (
+            <div className="space-y-6">
+              <MarkdownPreview content={instructions} />
+              <div className="flex items-center justify-end gap-4">
+                {!canStart && (
+                  <p className="text-sm text-muted-foreground">
+                    Please read the instructions carefully...
+                  </p>
+                )}
+                <Button onClick={handleNextClick} disabled={!canStart}>
+                  Start Test
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
+    </>
   );
 };
 
