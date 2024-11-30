@@ -98,6 +98,26 @@ export function TasksTab({ data, onChange }: TasksTabProps) {
     }
   };
 
+  const toggleTaskAnswer = (index: number, path: string) => {
+    const currentAnswers = data.tasks.items[index].answer
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    let newAnswers: string[];
+
+    if (currentAnswers.includes(path)) {
+      // Remove the path if it's already selected
+      newAnswers = currentAnswers.filter((p) => p !== path);
+    } else {
+      // Add the path if it's not selected
+      newAnswers = [...currentAnswers, path];
+    }
+
+    // Update the task with the new comma-separated answers
+    updateTask(index, "answer", newAnswers.join(", "));
+  };
+
   return (
     <div className="space-y-6">
       {data.tasks.items.map((task, index) => (
@@ -161,18 +181,27 @@ export function TasksTab({ data, onChange }: TasksTabProps) {
                     <CommandList>
                       <CommandEmpty>No paths found.</CommandEmpty>
                       <CommandGroup>
-                        {availablePaths.map((path) => (
-                          <CommandItem
-                            key={path}
-                            value={path}
-                            onSelect={() => {
-                              updateTask(index, "answer", path);
-                              setOpenPopover(null);
-                            }}
-                          >
-                            {path}
-                          </CommandItem>
-                        ))}
+                        {availablePaths.map((path) => {
+                          const isSelected = task.answer
+                            .split(",")
+                            .map((p) => p.trim())
+                            .includes(path);
+
+                          return (
+                            <CommandItem
+                              key={path}
+                              value={path}
+                              onSelect={() => {
+                                toggleTaskAnswer(index, path);
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                {isSelected && <CheckIcon className="h-4 w-4" />}
+                                <span className={cn(isSelected && "font-medium")}>{path}</span>
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
                       </CommandGroup>
                     </CommandList>
                   </Command>
