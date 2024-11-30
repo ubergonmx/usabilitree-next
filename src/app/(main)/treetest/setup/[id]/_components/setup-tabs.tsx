@@ -337,7 +337,7 @@ export default function SetupTabs({ params }: SetupTabsProps) {
         </TabsContent>
 
         <TabsContent value="tasks">
-          <TasksTab data={formData} onChange={setFormData} />
+          <TasksTab data={formData} studyId={params.id} onChange={setFormData} />
         </TabsContent>
 
         <TabsContent value="messages">

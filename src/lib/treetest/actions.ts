@@ -5,7 +5,7 @@ import { participants, studies, treeConfigs, treeTaskResults, treeTasks } from "
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
-import { eq } from "drizzle-orm";
+import { desc, and, ne, eq, sql } from "drizzle-orm";
 import { StudyFormData, TreeNode } from "@/lib/types/tree-test";
 
 const defaultWelcomeMessage = `Welcome to this Tree Test study, and thank you for agreeing to participate!
@@ -379,5 +379,57 @@ export async function checkStudyCompletion(id: string): Promise<boolean> {
   } catch (error) {
     console.error("Failed to load welcome message:", error);
     throw new Error("Failed to load welcome message");
+  }
+}
+
+export async function getExistingStudies(currentStudyId: string) {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const studiesList = await db
+      .select({
+        id: studies.id,
+        title: studies.title,
+        taskCount: sql<number>`count(${treeTasks.id})`.mapWith(Number),
+        updatedAt: studies.updatedAt,
+      })
+      .from(studies)
+      .leftJoin(treeTasks, eq(treeTasks.studyId, studies.id))
+      .where(
+        and(
+          eq(studies.userId, user.id),
+          eq(studies.type, "tree_test"),
+          ne(studies.id, currentStudyId)
+        )
+      )
+      .groupBy(studies.id, studies.title, studies.updatedAt)
+      .having(sql`count(${treeTasks.id}) > 0`)
+      .orderBy(desc(studies.updatedAt));
+
+    return studiesList;
+  } catch (error) {
+    console.error("Failed to get existing studies:", error);
+    throw new Error("Failed to get existing studies");
+  }
+}
+
+export async function getStudyTasks(studyId: string) {
+  try {
+    const tasks = await db
+      .select({
+        description: treeTasks.description,
+        answer: treeTasks.expectedAnswer,
+      })
+      .from(treeTasks)
+      .where(eq(treeTasks.studyId, studyId))
+      .orderBy(treeTasks.taskIndex);
+
+    return tasks;
+  } catch (error) {
+    console.error("Failed to get study tasks:", error);
+    throw new Error("Failed to get study tasks");
   }
 }

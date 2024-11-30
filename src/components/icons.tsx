@@ -88,6 +88,7 @@ export {
   MessageSquareCodeIcon,
   SearchIcon,
   XIcon,
+  LoaderIcon,
 } from "lucide-react";
 
 export {
