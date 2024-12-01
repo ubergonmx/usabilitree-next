@@ -271,7 +271,7 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
 
         pathResults.forEach((result) => {
           const pathParts = result.pathTaken.split("/").filter(Boolean);
-          const expectedParts = task.expectedAnswer.split("/").filter(Boolean);
+          const expectedAnswers = task.expectedAnswer.split(",").map((answer) => answer.trim());
 
           // Get parent path based on tree structure
           const parentPath =
@@ -279,15 +279,17 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
               ? `/${homeRoot}/${pathParts[1]}`
               : `/${pathParts[0]}`;
 
-          const expectedParentPath =
-            hasOnlyHomeRoot && expectedParts.length > 1
+          const expectedParentPaths = expectedAnswers.map((answer) => {
+            const expectedParts = answer.split("/").filter(Boolean);
+            return hasOnlyHomeRoot && expectedParts.length > 1
               ? `/${homeRoot}/${expectedParts[1]}`
               : `/${expectedParts[0]}`;
+          });
 
           if (!parentClickStats.has(parentPath)) {
             parentClickStats.set(parentPath, {
               path: parentPath,
-              isCorrect: parentPath === expectedParentPath,
+              isCorrect: expectedParentPaths.includes(parentPath),
               firstClickCount: Number(result.count),
               firstClickPercentage: Math.round((Number(result.count) / totalParticipants) * 100),
               totalClickCount: Number(result.count),
