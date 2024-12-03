@@ -90,14 +90,15 @@ export async function deleteStudy(id: string) {
 
 export async function saveStudyData(id: string, data: StudyFormData) {
   const user = await getCurrentUser();
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
+  if (!user) throw new Error("Unauthorized");
 
   try {
-    // Start a transaction to ensure all updates succeed or fail together
     await db.transaction(async (tx) => {
-      // Update general study info
+      const [study] = await tx
+        .select({ status: studies.status })
+        .from(studies)
+        .where(eq(studies.id, id));
+
       await tx
         .update(studies)
         .set({
@@ -107,7 +108,6 @@ export async function saveStudyData(id: string, data: StudyFormData) {
         })
         .where(eq(studies.id, id));
 
-      // Update or insert tree config
       const [existingConfig] = await tx
         .select()
         .from(treeConfigs)
@@ -134,26 +134,84 @@ export async function saveStudyData(id: string, data: StudyFormData) {
         });
       }
 
-      // Delete existing tasks and insert new ones
-      await tx.delete(treeTasks).where(eq(treeTasks.studyId, id));
+      // Handle tasks based on study status
+      if (study?.status === "draft") {
+        // In draft mode, can delete and recreate tasks
+        await tx.delete(treeTasks).where(eq(treeTasks.studyId, id));
 
-      // Insert new tasks
-      if (data.tasks.items.length > 0) {
-        const tasksToInsert = data.tasks.items
-          .filter((task) => task.description && task.answer) // Filter tasks with non-empty description and answer
-          .map((task, index) => ({
-            id: nanoid(),
-            studyId: id,
-            taskIndex: index,
-            description: task.description,
-            expectedAnswer: task.answer,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }));
+        if (data.tasks.items.length > 0) {
+          const tasksToInsert = data.tasks.items
+            .filter((task) => task.description && task.answer)
+            .map((task, index) => ({
+              id: nanoid(),
+              studyId: id,
+              taskIndex: index,
+              description: task.description,
+              expectedAnswer: task.answer,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }));
 
-        if (tasksToInsert.length > 0) {
-          await tx.insert(treeTasks).values(tasksToInsert);
+          if (tasksToInsert.length > 0) {
+            await tx.insert(treeTasks).values(tasksToInsert);
+          }
         }
+      } else {
+        // Not in draft mode, update existing tasks only
+        const existingTasks = await tx
+          .select()
+          .from(treeTasks)
+          .where(eq(treeTasks.studyId, id))
+          .orderBy(treeTasks.taskIndex);
+
+        const now = new Date();
+
+        await Promise.all(
+          existingTasks.map(async (task, index) => {
+            const updatedTask = data.tasks.items[index];
+            if (
+              !updatedTask?.description ||
+              !updatedTask?.answer ||
+              (task.description === updatedTask.description &&
+                task.expectedAnswer === updatedTask.answer)
+            ) {
+              return;
+            }
+
+            // Update task
+            await tx
+              .update(treeTasks)
+              .set({
+                description: updatedTask.description,
+                expectedAnswer: updatedTask.answer,
+                updatedAt: now,
+              })
+              .where(eq(treeTasks.id, task.id));
+
+            // If answer changed, update all results for this task
+            if (task.expectedAnswer !== updatedTask.answer) {
+              const taskResults = await tx
+                .select()
+                .from(treeTaskResults)
+                .where(eq(treeTaskResults.taskId, task.id));
+
+              const correctAnswers = updatedTask.answer.split(",").map((a) => a.trim());
+
+              await Promise.all(
+                taskResults.map((result) => {
+                  const actualPath = findLastValidPath(data.tree.parsed, result.pathTaken);
+
+                  return tx
+                    .update(treeTaskResults)
+                    .set({
+                      successful: actualPath ? correctAnswers.includes(actualPath) : false,
+                    })
+                    .where(eq(treeTaskResults.id, result.id));
+                })
+              );
+            }
+          })
+        );
       }
     });
 
@@ -432,4 +490,35 @@ export async function getStudyTasks(studyId: string) {
     console.error("Failed to get study tasks:", error);
     throw new Error("Failed to get study tasks");
   }
+}
+
+function findLastValidPath(tree: TreeNode[], pathTaken: string): string | null {
+  // Split path into segments
+  const segments = pathTaken.split("/").filter(Boolean);
+
+  // Function to collect all valid links from tree
+  const collectLinks = (nodes: TreeNode[], validLinks: string[]) => {
+    for (const node of nodes) {
+      if (node.link) {
+        validLinks.push(node.link);
+      }
+      if (node.children) {
+        collectLinks(node.children, validLinks);
+      }
+    }
+  };
+
+  const validLinks: string[] = [];
+  collectLinks(tree, validLinks);
+
+  // Go through segments in reverse to find last valid path
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const targetNode = segments[i];
+    const validLink = validLinks.find((link) => link.endsWith(`/${targetNode}`));
+    if (validLink) {
+      return validLink;
+    }
+  }
+
+  return null;
 }

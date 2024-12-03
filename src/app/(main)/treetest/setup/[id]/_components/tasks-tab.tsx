@@ -20,10 +20,11 @@ import { CopyTasksDialog } from "./copy-tasks-dialog";
 interface TasksTabProps {
   data: StudyFormData;
   studyId: string;
+  status: string;
   onChange: (data: StudyFormData) => void;
 }
 
-export function TasksTab({ data, studyId, onChange }: TasksTabProps) {
+export function TasksTab({ data, studyId, status, onChange }: TasksTabProps) {
   const [openPopover, setOpenPopover] = useState<number | null>(null);
 
   // Recursive function to get all available paths from the tree
@@ -228,22 +229,24 @@ export function TasksTab({ data, studyId, onChange }: TasksTabProps) {
         </div>
       ))}
 
-      <div className="flex items-center gap-2">
-        <Button onClick={addTask} variant="outline" className="gap-2">
-          <PlusIcon className="h-4 w-4" /> Add Task
-        </Button>
-        <CopyTasksDialog
-          studyId={studyId}
-          onCopyTasks={(tasks) => {
-            onChange({
-              ...data,
-              tasks: {
-                items: [...data.tasks.items, ...tasks],
-              },
-            });
-          }}
-        />
-      </div>
+      {status === "draft" && (
+        <div className="flex items-center gap-2">
+          <Button onClick={addTask} variant="outline" className="gap-2">
+            <PlusIcon className="h-4 w-4" /> Add Task
+          </Button>
+          <CopyTasksDialog
+            studyId={studyId}
+            onCopyTasks={(tasks) => {
+              onChange({
+                ...data,
+                tasks: {
+                  items: [...data.tasks.items, ...tasks],
+                },
+              });
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
