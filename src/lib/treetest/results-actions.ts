@@ -265,19 +265,23 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
         const tree = JSON.parse(task.parsedTree) as Item[];
         const hasOnlyHomeRoot = tree.length === 1 && tree[0].name.toLowerCase().includes("home");
 
+        // First pass: collect all possible parent names
+        const allParentNames = new Set<string>();
+        pathResults.forEach((result) => {
+          const pathParts = result.pathTaken.split("/").filter(Boolean);
+          if (hasOnlyHomeRoot && pathParts.length > 1) {
+            allParentNames.add(`/${pathParts[1]}`);
+          } else {
+            allParentNames.add(`/${pathParts[0]}`);
+          }
+        });
+
         // Process paths to get parent click statistics
         const parentClickStats = new Map<string, ParentClickStats>();
         const homeRoot = hasOnlyHomeRoot ? sanitizeTreeTestLink(tree[0].name) : "";
 
         pathResults.forEach((result) => {
-          const pathParts = result.pathTaken.split("/").filter(Boolean);
           const expectedAnswers = task.expectedAnswer.split(",").map((answer) => answer.trim());
-
-          // Get parent path based on tree structure
-          const parentPath =
-            hasOnlyHomeRoot && pathParts.length > 1
-              ? `/${homeRoot}/${pathParts[1]}`
-              : `/${pathParts[0]}`;
 
           const expectedParentPaths = expectedAnswers.map((answer) => {
             const expectedParts = answer.split("/").filter(Boolean);
@@ -286,22 +290,47 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
               : `/${expectedParts[0]}`;
           });
 
-          if (!parentClickStats.has(parentPath)) {
-            parentClickStats.set(parentPath, {
-              path: parentPath,
-              isCorrect: expectedParentPaths.includes(parentPath),
-              firstClickCount: Number(result.count),
-              firstClickPercentage: Math.round((Number(result.count) / totalParticipants) * 100),
-              totalClickCount: Number(result.count),
-              totalClickPercentage: Math.round((Number(result.count) / totalParticipants) * 100),
-            });
-          } else {
-            const stats = parentClickStats.get(parentPath)!;
-            stats.totalClickCount += Number(result.count);
-            stats.totalClickPercentage = Math.round(
-              (stats.totalClickCount / totalParticipants) * 100
-            );
-          }
+          // For each possible parent name, check if it appears in the path
+          allParentNames.forEach((possibleParentName) => {
+            const parentPathForName = hasOnlyHomeRoot
+              ? `/${homeRoot}${possibleParentName}`
+              : possibleParentName;
+
+            // Check if this path starts with this parent path (first click)
+            const isFirstClick = result.pathTaken.startsWith(parentPathForName);
+
+            // Check if this path includes this parent name anywhere (total clicks)
+            const includesParentName = result.pathTaken.includes(possibleParentName);
+
+            if (!parentClickStats.has(parentPathForName)) {
+              parentClickStats.set(parentPathForName, {
+                path: parentPathForName,
+                isCorrect: expectedParentPaths.includes(parentPathForName),
+                firstClickCount: isFirstClick ? Number(result.count) : 0,
+                firstClickPercentage: isFirstClick
+                  ? Math.round((Number(result.count) / totalParticipants) * 100)
+                  : 0,
+                totalClickCount: includesParentName ? Number(result.count) : 0,
+                totalClickPercentage: includesParentName
+                  ? Math.round((Number(result.count) / totalParticipants) * 100)
+                  : 0,
+              });
+            } else {
+              const stats = parentClickStats.get(parentPathForName)!;
+              if (isFirstClick) {
+                stats.firstClickCount += Number(result.count);
+                stats.firstClickPercentage = Math.round(
+                  (stats.firstClickCount / totalParticipants) * 100
+                );
+              }
+              if (includesParentName) {
+                stats.totalClickCount += Number(result.count);
+                stats.totalClickPercentage = Math.round(
+                  (stats.totalClickCount / totalParticipants) * 100
+                );
+              }
+            }
+          });
         });
 
         // Get incorrect destinations
