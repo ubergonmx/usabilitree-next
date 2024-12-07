@@ -104,6 +104,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
         toast.success("Settings updated successfully");
         form.reset(data);
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       toast.error("Failed to update settings. Please try again.");
     }
@@ -134,6 +135,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
         // Redirect to home page or logout
         window.location.href = "/dashboard";
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       toast.error("Failed to delete account. Please try again.");
     }
