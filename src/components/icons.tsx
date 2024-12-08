@@ -128,4 +128,5 @@ export {
   CopyIcon,
   CrossCircledIcon,
   InfoCircledIcon,
+  BellIcon,
 } from "@radix-ui/react-icons";
