@@ -36,6 +36,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@react-email/components": "^0.0.27",
     "@react-email/render": "^1.0.2",
+    "@sentry/nextjs": "^8.54.0",
     "@t3-oss/env-nextjs": "^0.11.1",
     "arctic": "^2.2.2",
     "class-variance-authority": "^0.7.0",
