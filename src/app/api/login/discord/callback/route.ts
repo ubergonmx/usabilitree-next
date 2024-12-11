@@ -8,6 +8,7 @@ import { Paths } from "@/lib/constants";
 import { users } from "@/db/schema";
 import { setSession } from "@/lib/auth/session";
 import { notifyNewUser } from "@/lib/discord";
+import * as Sentry from "@sentry/react";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -86,15 +87,15 @@ export async function GET(request: Request): Promise<Response> {
       status: 302,
       headers: { Location: Paths.Dashboard },
     });
-  } catch (e) {
+  } catch (error) {
     // the specific error message depends on the provider
-    if (e instanceof OAuth2RequestError) {
+    if (error instanceof OAuth2RequestError) {
       // invalid code
       return new Response(JSON.stringify({ message: "Invalid code" }), {
         status: 400,
       });
     }
-    console.error(e);
+    Sentry.captureException(error);
     return new Response(JSON.stringify({ message: "internal server error" }), {
       status: 500,
     });

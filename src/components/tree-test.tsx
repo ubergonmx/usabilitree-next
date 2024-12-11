@@ -18,6 +18,7 @@ import { sanitizeTreeTestLink } from "@/lib/utils";
 import { Item, ItemWithExpanded, TreeTestConfig } from "@/lib/types/tree-test";
 import { toast } from "sonner";
 import { ExclamationTriangleIcon } from "./icons";
+import * as Sentry from "@sentry/react";
 
 const confidenceLevels = [
   { value: 1, label: "Strongly Disagree" },
@@ -263,10 +264,10 @@ export function TreeTestComponent({ config }: TreeTestProps) {
       setSelectedLink(undefined);
       moveToNextTask();
     } catch (error) {
-      console.error("Error submitting task result:", error);
       toast("Error submitting task result", {
         icon: <ExclamationTriangleIcon className="h-5 w-5 text-destructive" />,
       });
+      Sentry.captureException(error);
     } finally {
       setIsSubmitting(false);
     }

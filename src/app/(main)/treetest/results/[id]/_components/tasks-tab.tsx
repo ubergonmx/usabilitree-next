@@ -24,6 +24,7 @@ import { BoxPlot } from "@/components/ui/box-plot";
 import { Button } from "@/components/ui/button";
 import { Item } from "@/lib/types/tree-test";
 import { Input } from "@/components/ui/input";
+import * as Sentry from "@sentry/react";
 
 const confidenceLevels = [
   { value: 1, label: "Strongly Disagree" },
@@ -456,7 +457,7 @@ export function TasksTab({ studyId }: { studyId: string }) {
         const data = await getTasksStats(studyId);
         setTasks(data);
       } catch (error) {
-        console.error("Failed to load tasks:", error);
+        Sentry.captureException(error);
       } finally {
         setLoading(false);
       }

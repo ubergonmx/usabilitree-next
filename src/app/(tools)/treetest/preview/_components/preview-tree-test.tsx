@@ -7,6 +7,7 @@ import { MarkdownPreview } from "@/components/markdown-preview";
 import { Card } from "@/components/ui/card";
 import { loadWelcomeMessage } from "@/lib/treetest/actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import * as Sentry from "@sentry/react";
 
 const instructions = `# Instructions
 **Here's how it works:**
@@ -33,9 +34,9 @@ const TestPreviewPage = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     loadWelcomeMessage(params.id)
       .then(setWelcomeMessage)
-      .catch((err) => {
-        console.error("Failed to load welcome message:", err);
+      .catch((error) => {
         setError("Failed to load welcome message");
+        Sentry.captureException(error);
       });
   }, [params.id]);
 

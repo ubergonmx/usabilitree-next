@@ -7,6 +7,7 @@ import { MarkdownPreview } from "@/components/markdown-preview";
 import { Card } from "@/components/ui/card";
 import { loadWelcomeMessage, checkStudyCompletion } from "@/lib/treetest/actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import * as Sentry from "@sentry/react";
 
 const instructions = `# Instructions
 **Here's how it works:**
@@ -43,9 +44,9 @@ const TestLivePage = ({ params }: { params: { id: string } }) => {
         setWelcomeMessage(message);
         setIsCompleted(completed);
       })
-      .catch((err) => {
-        console.error("Failed to load study data:", err);
+      .catch((error) => {
         setError("Failed to load study data");
+        Sentry.captureException(error);
       });
   }, [params.id]);
 

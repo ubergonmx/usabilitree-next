@@ -33,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { User } from "@/db/schema";
 import { deleteUserAccount, updateUserSettings } from "@/lib/settings/actions";
+import * as Sentry from "@sentry/react";
 
 const settingsFormSchema = z.object({
   email: z.string().email(),
@@ -104,9 +105,9 @@ export function SettingsForm({ user }: SettingsFormProps) {
         toast.success("Settings updated successfully");
         form.reset(data);
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
+    } catch (error) {
       toast.error("Failed to update settings. Please try again.");
+      Sentry.captureException(error);
     }
     setIsLoading(false);
   }
@@ -135,9 +136,9 @@ export function SettingsForm({ user }: SettingsFormProps) {
         // Redirect to home page or logout
         window.location.href = "/dashboard";
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
+    } catch (error) {
       toast.error("Failed to delete account. Please try again.");
+      Sentry.captureException(error);
     }
     setIsLoading(false);
     setIsDeleteDialogOpen(false);

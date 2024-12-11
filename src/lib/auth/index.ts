@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm/expressions";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { getSessionToken } from "./session";
 import { db } from "@/db";
+import * as Sentry from "@sentry/react";
 
 export const discord = new Discord(
   env.DISCORD_CLIENT_ID,
@@ -95,6 +96,7 @@ export async function invalidateSession(sessionId: string): Promise<void> {
     await db.delete(sessions).where(eq(sessions.id, sessionId));
   } catch (error) {
     console.error(`Error invalidating session with ID ${sessionId}:`, error);
+    Sentry.captureException(error);
   }
 }
 
@@ -103,6 +105,7 @@ export async function invalidateUserSessions(userId: string): Promise<void> {
     await db.delete(sessions).where(eq(sessions.userId, userId));
   } catch (error) {
     console.error(`Error invalidating sessions for user with ID ${userId}:`, error);
+    Sentry.captureException(error);
   }
 }
 export type SessionValidationResult =

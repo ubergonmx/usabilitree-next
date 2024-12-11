@@ -20,6 +20,7 @@ import {
 import { CopyIcon, LoaderIcon } from "@/components/icons";
 import { getExistingStudies, getStudyTasks } from "@/lib/treetest/actions";
 import { toast } from "sonner";
+import * as Sentry from "@sentry/react";
 
 interface CopyTasksDialogProps {
   studyId: string;
@@ -43,9 +44,9 @@ export function CopyTasksDialog({ studyId, onCopyTasks }: CopyTasksDialogProps) 
       setLoading(true);
       const data = await getExistingStudies(studyId);
       setStudies(data);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Failed to load studies");
+      Sentry.captureException(error);
     } finally {
       setLoading(false);
     }
@@ -58,9 +59,9 @@ export function CopyTasksDialog({ studyId, onCopyTasks }: CopyTasksDialogProps) 
       onCopyTasks(tasks);
       setOpen(false);
       toast.success("Tasks copied successfully");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Failed to copy tasks");
+      Sentry.captureException(error);
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { eq, or } from "drizzle-orm";
 import { users } from "@/db/schema";
 import { notifyNewUser } from "@/lib/discord";
+import * as Sentry from "@sentry/react";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -79,15 +80,15 @@ export async function GET(request: Request): Promise<Response> {
         Location: Paths.Dashboard,
       },
     });
-  } catch (e) {
+  } catch (error) {
     // the specific error message depends on the provider
-    if (e instanceof OAuth2RequestError) {
+    if (error instanceof OAuth2RequestError) {
       // invalid code
       return new Response(null, {
         status: 400,
       });
     }
-    console.error(e);
+    Sentry.captureException(error);
     return new Response(null, {
       status: 500,
     });

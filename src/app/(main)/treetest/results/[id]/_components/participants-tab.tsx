@@ -44,6 +44,7 @@ import {
 } from "@/lib/treetest/results-actions";
 import { toast } from "sonner";
 import { ParticipantDetailsModal } from "./participant-details-modal";
+import * as Sentry from "@sentry/react";
 
 // Extract Note component to reuse
 const ParticipantsNote = () => (
@@ -76,7 +77,7 @@ export function ParticipantsTab({ studyId, isOwner }: ParticipantsTabProps) {
   useEffect(() => {
     getParticipants(studyId)
       .then(setParticipants)
-      .catch(console.error)
+      .catch(Sentry.captureException)
       .finally(() => setLoading(false));
   }, [studyId]);
 
@@ -87,8 +88,8 @@ export function ParticipantsTab({ studyId, isOwner }: ParticipantsTabProps) {
       setParticipants(updatedParticipants);
       toast.success("Participant deleted successfully");
     } catch (error) {
-      console.error("Failed to delete participant:", error);
       toast.error("Failed to delete participant");
+      Sentry.captureException(error);
     }
   };
   const handleDeleteResult = async (taskId: string, participantId: string) => {
@@ -105,8 +106,8 @@ export function ParticipantsTab({ studyId, isOwner }: ParticipantsTabProps) {
       }
       toast.success("Task result deleted successfully");
     } catch (error) {
-      console.error("Failed to delete task result:", error);
       toast.error("Failed to delete task result");
+      Sentry.captureException(error);
     }
   };
 

@@ -5,6 +5,7 @@ import { MarkdownPreview } from "@/components/markdown-preview";
 import { Card } from "@/components/ui/card";
 import { loadCompletionMessage, updateParticipantCompletion } from "@/lib/treetest/actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import * as Sentry from "@sentry/react";
 
 const CompletedPage = ({ params }: { params: { id: string } }) => {
   const [completionMessage, setCompletionMessage] = useState<string | null>(null);
@@ -15,8 +16,8 @@ const CompletedPage = ({ params }: { params: { id: string } }) => {
 
     // Update completion time if participantId exists
     if (participantId) {
-      updateParticipantCompletion(participantId).catch((err) => {
-        console.error("Failed to update completion time:", err);
+      updateParticipantCompletion(participantId).catch((error) => {
+        Sentry.captureException(error);
       });
     }
 
@@ -26,9 +27,9 @@ const CompletedPage = ({ params }: { params: { id: string } }) => {
     // Load completion message
     loadCompletionMessage(params.id)
       .then(setCompletionMessage)
-      .catch((err) => {
-        console.error("Failed to load completion message:", err);
+      .catch((error) => {
         setError("Failed to load completion message");
+        Sentry.captureException(error);
       });
   }, [params.id]);
 

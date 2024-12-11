@@ -5,6 +5,7 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { verify, hash } from "@/lib/auth/hash";
 import { revalidatePath } from "next/cache";
+import * as Sentry from "@sentry/react";
 
 export async function updateUserSettings({
   userId,
@@ -51,6 +52,7 @@ export async function updateUserSettings({
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
+    Sentry.captureException(error);
     return { error: (error as Error).message };
   }
 }
@@ -60,6 +62,7 @@ export async function deleteUserAccount(userId: string) {
     await db.delete(users).where(eq(users.id, userId));
     return { success: true };
   } catch (error) {
+    Sentry.captureException(error);
     return { error: (error as Error).message };
   }
 }

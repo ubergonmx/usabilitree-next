@@ -21,6 +21,7 @@ import { verify, hash } from "./hash";
 import { generateId, invalidateSession, invalidateUserSessions } from "@/lib/auth";
 import { deleteSessionTokenCookie, getCurrentUser, setSession } from "./session";
 import { notifyNewUser } from "../discord";
+import * as Sentry from "@sentry/react";
 
 export interface ActionResponse<T> {
   fieldError?: Partial<Record<keyof T, string | undefined>>;
@@ -205,8 +206,8 @@ export async function sendPasswordResetLink(
     await sendMail(user.email, EmailTemplate.PasswordReset, { link: verificationLink });
 
     return { success: true };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
+    Sentry.captureException(error);
     return { error: "Failed to send verification email." };
   }
 }

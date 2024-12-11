@@ -41,6 +41,7 @@ import { MessagesTab } from "./messages-tab";
 import { StudyFormData } from "@/lib/types/tree-test";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import * as Sentry from "@sentry/react";
 
 interface SetupTabsProps {
   params: {
@@ -80,8 +81,8 @@ export default function SetupTabs({ params }: SetupTabsProps) {
         setStatus(details.status);
       })
       .catch((error) => {
-        console.error("Failed to load study data:", error);
         toast.error("Failed to load study data");
+        Sentry.captureException(error);
       });
   }, [params.id]);
 
@@ -121,8 +122,8 @@ export default function SetupTabs({ params }: SetupTabsProps) {
       await saveStudyData(params.id, formData);
       toast.success("Study saved successfully");
     } catch (error) {
-      console.error("Failed to save study:", error);
       toast.error("Failed to save study");
+      Sentry.captureException(error);
     } finally {
       setIsSaving(false);
       setHasUnsavedChanges(false);
@@ -141,9 +142,8 @@ export default function SetupTabs({ params }: SetupTabsProps) {
         await saveStudyData(params.id, formData);
         toast.success("Study saved successfully");
       } catch (error) {
-        console.error("Failed to save study:", error);
         toast.error("Failed to save study");
-        return;
+        Sentry.captureException(error);
       } finally {
         setIsSaving(false);
         setHasUnsavedChanges(false);
@@ -158,8 +158,8 @@ export default function SetupTabs({ params }: SetupTabsProps) {
       toast.success("Study launched successfully and link copied to clipboard");
       router.push(`/treetest/results/${params.id}`);
     } catch (error) {
-      console.error("Failed to launch study:", error);
       toast.error("Failed to launch study");
+      Sentry.captureException(error);
     } finally {
       setIsLaunching(false);
     }
@@ -177,9 +177,8 @@ export default function SetupTabs({ params }: SetupTabsProps) {
         await saveStudyData(params.id, formData);
         toast.success("Study saved successfully");
       } catch (error) {
-        console.error("Failed to save study:", error);
         toast.error("Failed to save study");
-        return;
+        Sentry.captureException(error);
       } finally {
         setIsSaving(false);
         setHasUnsavedChanges(false);

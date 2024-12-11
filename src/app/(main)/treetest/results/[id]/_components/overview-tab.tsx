@@ -15,6 +15,7 @@ import {
 import { TreeTestOverviewStats } from "@/lib/types/tree-test";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getTasksStats } from "@/lib/treetest/results-actions";
+import * as Sentry from "@sentry/react";
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -81,6 +82,7 @@ export function OverviewTab({ studyId }: { studyId: string }) {
         setTaskStats(tasksData);
       } catch (error) {
         console.error("Failed to load overview stats:", error);
+        Sentry.captureException(error);
       } finally {
         setLoading(false);
       }

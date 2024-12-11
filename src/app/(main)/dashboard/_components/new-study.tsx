@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
 import { createStudy } from "@/lib/treetest/actions";
+import * as Sentry from "@sentry/react";
 
 interface NewPostProps {
   isEligible: boolean;
@@ -47,9 +48,9 @@ export const NewStudy = ({ isEligible }: NewPostProps) => {
           // For future card sort implementation
           router.push("/dashboard");
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         toast.error("Failed to create study");
+        Sentry.captureException(error);
       }
     });
   };

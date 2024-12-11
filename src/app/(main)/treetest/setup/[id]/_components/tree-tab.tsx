@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TreeNode, StudyFormData } from "@/lib/types/tree-test";
 import { sanitizeTreeTestLink } from "@/lib/utils";
 import { InfoCircledIcon } from "@/components/icons";
+import * as Sentry from "@sentry/react";
 
 interface TreeTabProps {
   data: StudyFormData;
@@ -140,8 +141,9 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
       });
 
       toast.success("Tree structure parsed successfully");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unknown error occurred");
+      Sentry.captureException(error);
     }
   };
 

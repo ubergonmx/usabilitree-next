@@ -13,6 +13,7 @@ import {
   type Collaborator,
 } from "@/lib/treetest/results-actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import * as Sentry from "@sentry/react";
 
 interface SharingTabProps {
   studyId: string;
@@ -33,9 +34,9 @@ export function SharingTab({ studyId, userEmail, isOwner }: SharingTabProps) {
     try {
       const data = await getStudyCollaborators(studyId);
       setCollaborators(data);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Failed to load collaborators");
+      Sentry.captureException(error);
     } finally {
       setLoading(false);
     }
@@ -63,9 +64,9 @@ export function SharingTab({ studyId, userEmail, isOwner }: SharingTabProps) {
             await loadCollaborators();
             setEmailInput("");
             toast.success("Collaborator added successfully");
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (error) {
             toast.error("Failed to add collaborator");
+            Sentry.captureException(error);
           }
         } else {
           toast.error("This email is already a collaborator");
@@ -81,9 +82,9 @@ export function SharingTab({ studyId, userEmail, isOwner }: SharingTabProps) {
       await removeStudyCollaborator(collaborator.id);
       await loadCollaborators();
       toast.success("Collaborator removed successfully");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Failed to remove collaborator");
+      Sentry.captureException(error);
     }
   };
 

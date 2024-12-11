@@ -34,6 +34,7 @@ import { OverviewTab } from "./overview-tab";
 import { TasksTab } from "./tasks-tab";
 import { SharingTab } from "./sharing-tab";
 import { ParticipantsTab } from "./participants-tab";
+import * as Sentry from "@sentry/react";
 
 interface ResultTabsProps {
   params: {
@@ -55,7 +56,7 @@ export default function ResultTabs({ params, userEmail, isOwner }: ResultTabsPro
         setTitle(title);
         setIsCompleted(status === "completed");
       })
-      .catch(console.error);
+      .catch(Sentry.captureException);
   }, [params.id]);
 
   const handleCopyLink = () => {
@@ -71,8 +72,8 @@ export default function ResultTabs({ params, userEmail, isOwner }: ResultTabsPro
       toast.success("Study marked as completed");
       router.refresh();
     } catch (error) {
-      console.error("Failed to complete study:", error);
       toast.error("Failed to complete study");
+      Sentry.captureException(error);
     } finally {
       setIsFinishing(false);
     }
