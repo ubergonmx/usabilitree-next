@@ -7,7 +7,7 @@ export default withSentryConfig(nextConfig, {
   // https://github.com/getsentry/sentry-webpack-plugin#options
 
   org: "aaronpal",
-  project: "javascript-nextjs",
+  project: "usabilitree-next",
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
@@ -35,14 +35,14 @@ export default withSentryConfig(nextConfig, {
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   disableLogger: true,
 
-  // Deletes source maps after uploading
-  sourcemaps: {
-    deleteSourcemapsAfterUpload: true,
-  },
-
   // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
   // See the following for more information:
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true,
+
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
 });
