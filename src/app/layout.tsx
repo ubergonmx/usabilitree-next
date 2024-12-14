@@ -9,6 +9,7 @@ import localFont from "next/font/local";
 import { CSPostHogProvider } from "@/providers/posthog-provider";
 import PostHogPageView from "@/components/posthog/post-hog-page-view-";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 // import { Inter } from "next/font/google";
 // const inter = Inter({ subsets: ["latin"] });
@@ -70,6 +71,7 @@ export default function RootLayout({
             <Toaster />
           </ThemeProvider>
         </CSPostHogProvider>
+        <Analytics />
       </body>
     </html>
   );
