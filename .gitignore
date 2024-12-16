@@ -42,5 +42,7 @@ next-env.d.ts
 # db
 *.db
 local.db
+dump.sql
+
 # Sentry Config File
 .env.sentry-build-plugin
