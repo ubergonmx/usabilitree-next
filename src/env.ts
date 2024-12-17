@@ -19,6 +19,7 @@ export const env = createEnv({
     SMTP_PORT: z.number().int().min(1),
     SMTP_USER: z.string().trim().min(1),
     SMTP_PASSWORD: z.string().trim().min(1),
+    STUDY_LIMIT: z.number().int().min(0).default(6),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url(),
@@ -45,6 +46,7 @@ export const env = createEnv({
     SMTP_PORT: parseInt(process.env.SMTP_PORT ?? ""),
     SMTP_USER: process.env.SMTP_USER,
     SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+    STUDY_LIMIT: parseInt(process.env.STUDY_LIMIT ?? ""),
   },
   emptyStringAsUndefined: true,
 });
