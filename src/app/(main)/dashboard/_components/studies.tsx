@@ -5,6 +5,7 @@ import { StudyCard } from "./study-card";
 import { NewStudy } from "./new-study";
 import { getCurrentUser } from "@/lib/auth/session";
 import { eq } from "drizzle-orm";
+import { env } from "@/env";
 
 export async function Studies() {
   const user = await getCurrentUser();
@@ -27,7 +28,7 @@ export async function Studies() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <NewStudy isEligible={ownedStudies.length <= 3} />
+        <NewStudy isEligible={ownedStudies.length <= env.STUDY_LIMIT} />
         {ownedStudies.map((study) => (
           <StudyCard key={study.id} study={study} isOwner={true} />
         ))}
