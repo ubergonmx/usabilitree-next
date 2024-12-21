@@ -23,6 +23,7 @@ const CompletedPage = ({ params }: { params: { id: string } }) => {
 
     // Remove participantId from localStorage
     localStorage.removeItem("participantId");
+    localStorage.removeItem(`treeTest_${params.id}_currentTask`);
 
     // Load completion message
     loadCompletionMessage(params.id)

@@ -321,7 +321,19 @@ export async function loadTestConfig(id: string, preview: boolean = false, parti
 
     if (!config) throw new Error("Test configuration not found");
 
-    if (!preview && !participantId) {
+    // check if participantId is already in the database
+    let existingParticipantId;
+    if (participantId) {
+      const result = await db
+        .select({ id: participants.id })
+        .from(participants)
+        .where(and(eq(participants.id, participantId), eq(participants.studyId, id)));
+      if (result.length > 0) {
+        existingParticipantId = result[0].id;
+      }
+    }
+    console.log("Existing participant ID:", existingParticipantId);
+    if (!preview && !existingParticipantId) {
       const [participant] = await db
         .insert(participants)
         .values({

@@ -32,6 +32,8 @@ const confidenceLevels = [
 
 interface TreeTestProps {
   config: TreeTestConfig;
+  initialTaskIndex?: number;
+  onTaskChange?: (taskIndex: number) => void;
 }
 
 interface NavigationProps {
@@ -49,6 +51,9 @@ const Navigation = ({ items, onSelect, resetKey, setPathTaken }: NavigationProps
     // Check if there's only one root item containing "Home"
     const isOnlyRootHome = items.length === 1 && items[0].name.toLowerCase().includes("home");
     const initialRootLink = isOnlyRootHome ? sanitizeTreeTestLink(items[0].name) : "home";
+
+    console.log("Initial root link:", initialRootLink);
+    console.log("Is only root home:", isOnlyRootHome);
 
     // Initialize tree with expansion states
     const initializeTree = (items: Item[]): ItemWithExpanded[] => {
@@ -190,10 +195,10 @@ interface Result {
   skipped?: boolean;
 }
 
-export function TreeTestComponent({ config }: TreeTestProps) {
+export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }: TreeTestProps) {
   const [started, setStarted] = useState(false);
   const [startTime, setStartTime] = useState<number>();
-  const [currentTask, setCurrentTask] = useState(0);
+  const [currentTask, setCurrentTask] = useState(initialTaskIndex);
   const [results, setResults] = useState<Result[]>([]);
   const [resetKey, setResetKey] = useState(0);
   const [showConfidenceModal, setShowConfidenceModal] = useState(false);
@@ -206,6 +211,13 @@ export function TreeTestComponent({ config }: TreeTestProps) {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Call onTaskChange when currentTask changes
+  useEffect(() => {
+    if (onTaskChange) {
+      onTaskChange(currentTask);
+    }
+  }, [currentTask, onTaskChange]);
 
   useEffect(() => {
     // Scroll to top once the page is loaded
