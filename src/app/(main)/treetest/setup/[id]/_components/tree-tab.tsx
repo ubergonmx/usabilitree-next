@@ -155,10 +155,12 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
           <InfoCircledIcon className="h-4 w-4" />
           <AlertTitle>Important Note</AlertTitle>
           <AlertDescription>
-            The root level item should contain the word &quot;Home&quot; (e.g., &quot;Home&quot;,
-            &quot;Homepage&quot;, &quot;Home - City of Paranaque&quot;) for the system to recognize
-            it as the home page. This will be automatically expanded when participants start the
-            test.
+            If you want this tree test to behave like Optimal Workshop with automatic expansion of
+            the root level, create exactly one top-level item containing the word &quot;Home&quot;
+            (e.g., &quot;Home&quot;, &quot;Homepage&quot;, &quot;Home - My Website&quot;). When a
+            single top-level Home item is present, it will automatically expand when participants
+            start the test. This behavior is optional - multiple root items will simply start in the
+            collapsed state.
           </AlertDescription>
         </Alert>
         <Textarea
@@ -170,7 +172,7 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
               tree: { ...data.tree, structure: e.target.value },
             })
           }
-          placeholder={`Enter tree structure (use commas for indentation)\nExample:\nHome - City of Paranaque\n,Services\n,,Business Permits\n,,Health Services\n,About Us`}
+          placeholder={`Enter tree structure (use commas for next level)\nExample:\nHome - City of Manila\n,Services\n,,Business Permits\n,,Health Services\n,About Us`}
           className="min-h-[300px] font-mono"
         />
       </div>
