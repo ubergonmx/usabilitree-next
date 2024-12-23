@@ -188,7 +188,7 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
       {data.tree.parsed.length > 0 && (
         <div className="space-y-2">
           <Label>Parsed Structure Preview</Label>
-          <pre className="rounded-lg bg-muted p-4 font-mono text-sm">
+          <pre className="overflow-scroll rounded-lg bg-muted p-4 font-mono text-sm">
             {renderTreeAsAscii(data.tree.parsed)}
           </pre>
         </div>
