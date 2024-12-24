@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
 import {
   updateStudyStatus,
@@ -224,17 +225,28 @@ export default function SetupTabs({ params }: SetupTabsProps) {
 
           {status === "draft" && (
             <AlertDialog>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                disabled={!canLaunchOrPreview()}
-                asChild
-              >
-                <AlertDialogTrigger>
-                  <RocketIcon className="h-4 w-4" /> Launch
-                </AlertDialogTrigger>
-              </Button>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        disabled={!canLaunchOrPreview()}
+                        asChild
+                      >
+                        <AlertDialogTrigger>
+                          <RocketIcon className="h-4 w-4" /> Launch
+                        </AlertDialogTrigger>
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!canLaunchOrPreview() && (
+                    <TooltipContent>Setup your tree and tasks with answers first!</TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Launch Study?</AlertDialogTitle>
@@ -265,16 +277,27 @@ export default function SetupTabs({ params }: SetupTabsProps) {
             </AlertDialog>
           )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={handlePreview}
-            disabled={!canLaunchOrPreview() || isSaving}
-          >
-            <EyeOpenIcon className="h-4 w-4" />
-            Preview
-          </Button>
+          <TooltipProvider delayDuration={100}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={handlePreview}
+                    disabled={!canLaunchOrPreview() || isSaving}
+                  >
+                    <EyeOpenIcon className="h-4 w-4" />
+                    Preview
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {(!canLaunchOrPreview() || isSaving) && (
+                <TooltipContent>Setup your tree and tasks with answers first!</TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
 
           <AlertDialog>
             <Button variant="ghost" size="sm" className="text-destructive" asChild>
