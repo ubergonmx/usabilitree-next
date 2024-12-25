@@ -193,12 +193,27 @@ export default function SetupTabs({ params }: SetupTabsProps) {
     <main className="container min-h-[calc(100vh-160px)] pt-3 md:max-w-screen-md">
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <Link
-            href="/dashboard"
-            className="mb-3 flex items-center gap-2 text-sm text-muted-foreground hover:underline"
-          >
-            <ArrowLeftIcon className="h-5 w-5" /> back to dashboard
-          </Link>
+          <TooltipProvider delayDuration={100}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  {hasUnsavedChanges ? (
+                    <span className="mb-3 flex cursor-not-allowed items-center gap-2 text-sm text-muted-foreground opacity-60">
+                      <ArrowLeftIcon className="h-5 w-5" /> back to dashboard
+                    </span>
+                  ) : (
+                    <Link
+                      href="/dashboard"
+                      className="mb-3 flex items-center gap-2 text-sm text-muted-foreground hover:underline"
+                    >
+                      <ArrowLeftIcon className="h-5 w-5" /> back to dashboard
+                    </Link>
+                  )}
+                </div>
+              </TooltipTrigger>
+              {hasUnsavedChanges && <TooltipContent>Save your changes first!</TooltipContent>}
+            </Tooltip>
+          </TooltipProvider>
           <h1 className="flex items-center gap-2 text-2xl font-bold">
             <WorkflowIcon /> {formData.general.title || "Set up your Tree Test"}
           </h1>
