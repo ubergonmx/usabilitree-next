@@ -59,6 +59,10 @@ const ParticipantsNote = () => (
       subsequent attempts. This may occur due to participants experiencing connectivity issues
       during the study.
     </p>
+    <p className="mt-2 font-medium">
+      It is advisable to only delete participant results after you&apos;ve set the study to
+      Completed status.
+    </p>
   </div>
 );
 
@@ -341,7 +345,8 @@ export function ParticipantsTab({ studyId, isOwner }: ParticipantsTabProps) {
             <AlertDialogTitle>Delete Participant Results</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete all results for this participant? This action cannot
-              be undone.
+              be undone. It is advisable to only delete results after you&apos;ve set the study to
+              Completed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
