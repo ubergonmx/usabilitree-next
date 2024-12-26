@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StudyFormData, TreeNode } from "@/lib/types/tree-test";
 import { PlusIcon, TrashIcon, CheckIcon } from "@/components/icons";
+import { ArrowUp } from "lucide-react";
 import { toast } from "sonner";
 import {
   Command,
@@ -13,6 +14,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { CopyTasksDialog } from "./copy-tasks-dialog";
@@ -245,6 +247,21 @@ export function TasksTab({ data, studyId, status, onChange }: TasksTabProps) {
               });
             }}
           />
+          {/* Back to top button */}
+          <TooltipProvider delayDuration={100}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  size="icon"
+                  variant="outline"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Back to top</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       )}
     </div>
