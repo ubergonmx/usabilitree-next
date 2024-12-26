@@ -366,7 +366,7 @@ export default function SetupTabs({ params }: SetupTabsProps) {
         </TabsList>
 
         <TabsContent value="general">
-          <GeneralTab data={formData} onChange={setFormData} />
+          <GeneralTab data={formData} studyId={params.id} status={status} onChange={setFormData} />
         </TabsContent>
 
         <TabsContent value="tree">
