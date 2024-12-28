@@ -156,11 +156,9 @@ export function TreeTab({ data, onChange }: TreeTabProps) {
           <AlertTitle>Important Note</AlertTitle>
           <AlertDescription>
             If you want this tree test to behave like Optimal Workshop with automatic expansion of
-            the root level, create exactly one top-level item containing the word &quot;Home&quot;
-            (e.g., &quot;Home&quot;, &quot;Homepage&quot;, &quot;Home - My Website&quot;). When a
-            single top-level Home item is present, it will automatically expand when participants
-            start the test. This behavior is optional - multiple root items will simply start in the
-            collapsed state.
+            the root level, create exactly one top-level item. When a single top-level item is
+            present, it will automatically expand when participants start the test. This behavior is
+            optional - multiple root items will simply start in the collapsed state.
           </AlertDescription>
         </Alert>
         <Textarea

@@ -49,24 +49,23 @@ const Navigation = ({ items, onSelect, resetKey, setPathTaken }: NavigationProps
 
   useEffect(() => {
     // Check if there's only one root item containing "Home"
-    const isOnlyRootHome = items.length === 1 && items[0].name.toLowerCase().includes("home");
-    const initialRootLink = isOnlyRootHome ? sanitizeTreeTestLink(items[0].name) : "home";
-
-    console.log("Initial root link:", initialRootLink);
-    console.log("Is only root home:", isOnlyRootHome);
+    const isOnlyRootHome = items.length === 1;
+    // && items[0].name.toLowerCase().includes("home");
+    const initialRootLink = isOnlyRootHome ? "/" + sanitizeTreeTestLink(items[0].name) : "";
 
     // Initialize tree with expansion states
     const initializeTree = (items: Item[]): ItemWithExpanded[] => {
       return items.map((item) => ({
         ...item,
-        isExpanded: isOnlyRootHome && item.name.toLowerCase().includes("home"),
+        isExpanded: isOnlyRootHome,
+        // && item.name.toLowerCase().includes("home"),
         children: item.children ? initializeTree(item.children) : undefined,
       }));
     };
 
     setTreeState(initializeTree(items));
     setSelectedLink("");
-    setPathTaken(`/${initialRootLink || ""}`);
+    setPathTaken(initialRootLink);
   }, [resetKey, items, setPathTaken]);
 
   const updatePathTaken = (prev: string, name: string) => {
@@ -290,8 +289,8 @@ export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }
       const endTime = Date.now();
       const duration = (endTime - startTime!) / 1000;
 
-      const isOnlyRootHome =
-        config.tree.length === 1 && config.tree[0].name.toLowerCase().includes("home");
+      const isOnlyRootHome = config.tree.length === 1;
+      //&& config.tree[0].name.toLowerCase().includes("home");
       const rootLink = isOnlyRootHome ? sanitizeTreeTestLink(config.tree[0].name) : "";
 
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {

@@ -331,7 +331,8 @@ export async function getTasksStats(studyId: string): Promise<TaskStats[]> {
 
       // Parse the tree to determine if "home" is the only root child
       const tree = JSON.parse(task.parsedTree) as Item[];
-      const hasOnlyHomeRoot = tree.length === 1 && tree[0].name.toLowerCase().includes("home");
+      const hasOnlyHomeRoot = tree.length === 1;
+      // && tree[0].name.toLowerCase().includes("home");
 
       // First pass: collect all possible parent names
       const allParentNames = new Set<string>();
