@@ -187,6 +187,21 @@ export const treeTaskResults = sqliteTable(
   },
   (table) => ({
     taskLookupIndex: index("idx_task_results_lookup").on(table.participantId, table.taskId),
+    taskIdIndex: index("idx_task_results_task_id").on(table.taskId),
+    timeStatsIndex: index("idx_task_results_time_stats").on(
+      table.taskId,
+      table.completionTimeSeconds
+    ),
+    confidenceRatingIndex: index("idx_task_results_confidence").on(
+      table.taskId,
+      table.confidenceRating
+    ),
+    pathAnalysisIndex: index("idx_task_results_path_analysis").on(
+      table.taskId,
+      table.pathTaken,
+      table.successful,
+      table.directPathTaken
+    ),
   })
 );
 
