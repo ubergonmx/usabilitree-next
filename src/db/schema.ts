@@ -154,6 +154,7 @@ export const participants = sqliteTable(
       .notNull()
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),
     completedAt: integer("completed_at", { mode: "timestamp" }), // Null until fully completed
+    durationSeconds: integer("duration_seconds"), // Total active time spent on the study
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(STRFTIME('%s', 'now') * 1000)`),

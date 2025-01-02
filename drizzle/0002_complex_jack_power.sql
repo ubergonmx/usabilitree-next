@@ -1,0 +1,1 @@
+ALTER TABLE `participants` ADD `duration_seconds` integer;
