@@ -186,19 +186,19 @@ const Navigation = ({ items, onSelect, resetKey, setPathTaken }: NavigationProps
   return <div className="mt-4">{renderItems(treeState)}</div>;
 };
 
-interface Result {
-  taskId: string;
-  selectedLink?: string | null;
-  duration?: number;
-  confidenceLevel?: string | null;
-  skipped?: boolean;
-}
+// interface Result {
+//   taskId: string;
+//   selectedLink?: string | null;
+//   duration?: number;
+//   confidenceLevel?: string | null;
+//   skipped?: boolean;
+// }
 
 export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }: TreeTestProps) {
   const [started, setStarted] = useState(false);
   const [startTime, setStartTime] = useState<number>();
   const [currentTask, setCurrentTask] = useState(initialTaskIndex);
-  const [results, setResults] = useState<Result[]>([]);
+  // const [results, setResults] = useState<Result[]>([]);
   const [resetKey, setResetKey] = useState(0);
   const [showConfidenceModal, setShowConfidenceModal] = useState(false);
   const [selectedLink, setSelectedLink] = useState<string>();
@@ -260,15 +260,15 @@ export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
-      setResults((prev) => [
-        ...prev,
-        {
-          taskId: config.tasks[currentTask].id,
-          selectedLink,
-          duration: (Date.now() - (startTime ?? Date.now())) / 1000,
-          confidenceLevel,
-        },
-      ]);
+      // setResults((prev) => [
+      //   ...prev,
+      //   {
+      //     taskId: config.tasks[currentTask].id,
+      //     selectedLink,
+      //     duration: (Date.now() - (startTime ?? Date.now())) / 1000,
+      //     confidenceLevel,
+      //   },
+      // ]);
 
       setShowConfidenceModal(false);
       setConfidenceLevel(undefined);
@@ -302,7 +302,7 @@ export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }
       });
     }
 
-    setResults((prev) => [...prev, { taskId: config.tasks[currentTask].id, skipped: true }]);
+    //setResults((prev) => [...prev, { taskId: config.tasks[currentTask].id, skipped: true }]);
     moveToNextTask();
   };
 
@@ -318,26 +318,6 @@ export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }
       router.push("completed");
     }
   };
-
-  useEffect(() => {
-    if (!started && results.length > 0 && currentTask === config.tasks.length) {
-      console.log("Test completed. Results:", results);
-    }
-  }, [started, results, currentTask, config.tasks.length]);
-
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-
-    if (config.tree && config.tree.length > 0 && config.tasks && config.tasks.length > 0) {
-      window.addEventListener("beforeunload", handleBeforeUnload);
-    }
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [config.tree, config.tasks]);
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-3xl bg-gray-100">
