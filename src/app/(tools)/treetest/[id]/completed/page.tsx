@@ -13,17 +13,20 @@ const CompletedPage = ({ params }: { params: { id: string } }) => {
 
   useEffect(() => {
     const participantId = localStorage.getItem("participantId");
+    const savedActiveTime = localStorage.getItem(`treeTest_${params.id}_activeTime`);
+    const activeTime = savedActiveTime ? parseInt(savedActiveTime, 10) / 1000 : null;
 
     // Update completion time if participantId exists
     if (participantId) {
-      updateParticipantCompletion(participantId).catch((error) => {
+      updateParticipantCompletion(participantId, activeTime).catch((error) => {
         Sentry.captureException(error);
       });
     }
 
-    // Remove participantId from localStorage
+    // Remove participantId, currentTask, and activeTime from localStorage
     localStorage.removeItem("participantId");
     localStorage.removeItem(`treeTest_${params.id}_currentTask`);
+    localStorage.removeItem(`treeTest_${params.id}_activeTime`);
 
     // Load completion message
     loadCompletionMessage(params.id)

@@ -396,12 +396,16 @@ export async function storeTreeTaskResult(
   }
 }
 
-export async function updateParticipantCompletion(participantId: string) {
+export async function updateParticipantCompletion(
+  participantId: string,
+  activeTime: number | null
+) {
   try {
     await db
       .update(participants)
       .set({
         completedAt: new Date(),
+        durationSeconds: activeTime,
       })
       .where(eq(participants.id, participantId));
 
