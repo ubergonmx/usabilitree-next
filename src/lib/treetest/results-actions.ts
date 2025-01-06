@@ -479,6 +479,7 @@ export interface Participant {
   id: string;
   sessionId: string;
   startedAt: Date;
+  durationSeconds: number | null;
   completedAt: Date | null;
   taskResults: {
     id: string;
@@ -494,6 +495,7 @@ export interface Participant {
   }[];
   hasDuplicates: boolean;
   participantNumber: number;
+  // totalDuration: number;
 }
 
 export async function getParticipants(studyId: string): Promise<Participant[]> {
@@ -503,6 +505,7 @@ export async function getParticipants(studyId: string): Promise<Participant[]> {
         id: participants.id,
         sessionId: participants.sessionId,
         startedAt: participants.startedAt,
+        durationSeconds: participants.durationSeconds,
         completedAt: participants.completedAt,
       })
       .from(participants)
@@ -530,18 +533,27 @@ export async function getParticipants(studyId: string): Promise<Participant[]> {
         // Group results by taskIndex to identify duplicates
         const groupedResults = results.reduce(
           (acc, result) => {
+            // Initialize an array for the taskIndex if it doesn't exist
             if (!acc[result.taskIndex]) {
               acc[result.taskIndex] = [];
             }
+            // Add the result to the corresponding taskIndex group
             acc[result.taskIndex].push(result);
             return acc;
           },
           {} as Record<number, typeof results>
         );
 
+        // Sum of all taskResults completionTimeSeconds
+        // const totalDuration = results.reduce(
+        //   (sum, result) => sum + result.completionTimeSeconds,
+        //   0
+        // );
+
         return {
           ...participant,
           taskResults: results,
+          // totalDuration,
           hasDuplicates: Object.values(groupedResults).some((group) => group.length > 1),
           participantNumber: index + 1,
         };
