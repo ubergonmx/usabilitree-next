@@ -291,13 +291,17 @@ export function ParticipantsTab({ studyId, isOwner }: ParticipantsTabProps) {
                       {formatDistanceToNow(participant.startedAt, { addSuffix: true })}
                     </TableCell>
                     <TableCell>
-                      {participant.completedAt
-                        ? `${Math.round(
-                            (participant.completedAt.getTime() - participant.startedAt.getTime()) /
-                              1000 /
-                              60
-                          )} min`
-                        : "-"}
+                      {participant.durationSeconds ? (
+                        <span>{Math.round(participant.durationSeconds / 60)} min</span>
+                      ) : participant.completedAt ? (
+                        `${Math.round(
+                          (participant.completedAt.getTime() - participant.startedAt.getTime()) /
+                            1000 /
+                            60
+                        )} min`
+                      ) : (
+                        "-"
+                      )}
                     </TableCell>
                     <TableCell>{successRate}%</TableCell>
                     <TableCell>{directnessRate}%</TableCell>
