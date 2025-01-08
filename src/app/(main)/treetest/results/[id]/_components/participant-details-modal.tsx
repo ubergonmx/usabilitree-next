@@ -89,6 +89,38 @@ export function ParticipantDetailsModal({
                     </div>
                   )}
                 </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Completed At</p>
+                  <p className="text-sm">
+                    {participant.completedAt
+                      ? format(participant.completedAt, "PPP 'at' pp")
+                      : "Not completed"}
+                  </p>
+                </div>
+                <div>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-left">
+                          <p className="text-sm text-muted-foreground">Duration</p>
+                          <p className="text-sm">
+                            {participant.durationSeconds
+                              ? `${participant.durationSeconds}s`
+                              : "N/A"}
+                          </p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p>
+                          The total active time of the user from the moment they visited the task
+                          page (not the welcome nor the instruction page) until they completed it.
+                          This isn&apos;t the sum of all their tasks time as you can see in the
+                          table.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
               {/* Task Results Table */}
               <div className="rounded-md border">
@@ -98,7 +130,19 @@ export function ParticipantDetailsModal({
                       <TableHead>Task #</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Path Taken</TableHead>
-                      <TableHead>Time</TableHead>
+                      <TableHead>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger className="text-left font-medium">Time</TooltipTrigger>
+                            <TooltipContent side="top">
+                              <p>
+                                This is the duration from the moment they clicked the button
+                                &quot;Start task&quot;
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableHead>
                       <TableHead>Direct Path</TableHead>
                       <TableHead>Completed At</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
