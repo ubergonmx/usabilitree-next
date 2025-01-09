@@ -26,13 +26,29 @@ export async function getStudyOverviewStats(studyId: string): Promise<TreeTestOv
     // Calculate completion times
     const completionTimes = await db
       .select({
-        timeTaken: sql<number>`${participants.completedAt} - ${participants.startedAt}`,
+        durationSeconds: participants.durationSeconds,
+        completedAt: participants.completedAt,
+        startedAt: participants.startedAt,
       })
       .from(participants)
       .where(and(eq(participants.studyId, studyId), sql`${participants.completedAt} is not null`));
 
-    const times = completionTimes.map((t) => t.timeTaken).sort((a, b) => a - b);
+    // Use durationSeconds when available, fall back to calculating from timestamps when not
+    const times = completionTimes
+      .map((t) => {
+        if (t.durationSeconds !== null) {
+          return t.durationSeconds;
+        } else if (t.completedAt !== null && t.startedAt !== null) {
+          // Calculate the difference in seconds
+          return (Number(t.completedAt) - Number(t.startedAt)) / 1000;
+        }
+        return 0; // Fallback if all else fails
+      })
+      .filter((time) => time > 0) // Filter out any zero or negative values
+      .sort((a, b) => a - b);
     const medianIndex = Math.floor(times.length / 2);
+
+    console.log("Completion times:", times);
 
     // Get task success and directness rates
     const [taskStats] = await db
