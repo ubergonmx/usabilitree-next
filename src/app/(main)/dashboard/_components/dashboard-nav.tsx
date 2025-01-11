@@ -6,6 +6,10 @@ import { FileTextIcon, GearIcon, BellIcon } from "@/components/icons";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
+// Store the latest update date in a constant at the top of the file
+// This makes it easier to update in one place when new content is added
+const LATEST_UPDATE_DATE = "2025-05-11"; // Update this when new content is added
+
 const items = [
   {
     title: "Studies",
@@ -41,14 +45,13 @@ export function DashboardNav({ className }: Props) {
   useEffect(() => {
     // Check if user has seen the latest updates
     const lastSeenUpdate = localStorage.getItem("lastSeenUpdate");
-    const latestUpdateDate = "2024-03-20"; // Match your latest update date
-    setHasUnreadUpdates(!lastSeenUpdate || lastSeenUpdate < latestUpdateDate);
+    setHasUnreadUpdates(!lastSeenUpdate || lastSeenUpdate < LATEST_UPDATE_DATE);
   }, []);
 
   useEffect(() => {
     // Mark updates as read when visiting the updates page
     if (path === "/dashboard/updates") {
-      localStorage.setItem("lastSeenUpdate", "2024-03-20"); // Match your latest update date
+      localStorage.setItem("lastSeenUpdate", LATEST_UPDATE_DATE);
       setHasUnreadUpdates(false);
     }
   }, [path]);
