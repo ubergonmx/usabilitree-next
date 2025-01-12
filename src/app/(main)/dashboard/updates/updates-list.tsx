@@ -80,6 +80,7 @@ const updates: Update[] = [
     description: "Fixed participant time tracking and added more information",
     type: "fix",
     details: [
+      "Fixed UI bug covering the Start Task button with the task description in the tree test.",
       "Fixed participant's total time taken calculation. It now records active time instead of simply subtracting start and end timestamps.",
       "Added a 3-minute idle/inactivity timeout threshold that pauses active time recording.",
       "Added more information and tooltip notes to the Time column and Duration in participant modal.",

@@ -320,41 +320,47 @@ export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }
   };
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-3xl bg-gray-100">
+    <div className="min-h-screen w-full bg-gray-100">
       {!config.tree || config.tree.length === 0 || !config.tasks || config.tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center pt-20">
-          <h2 className="text-lg font-semibold">No Tree Structure or Tasks Found</h2>
-          <p className="mt-2 text-center">
-            It seems that there are no trees or tasks available for this study. Please go back to
-            the setup and ensure that you have added a tree structure and at least one task.
-          </p>
-        </div>
+        <>
+          <div className="h-1 w-full bg-theme"></div>
+          <div className="flex flex-col items-center justify-center pt-20">
+            <h2 className="text-lg font-semibold">No Tree Structure or Tasks Found</h2>
+            <p className="mt-2 text-center">
+              It seems that there are no trees or tasks available for this study. Please go back to
+              the setup and ensure that you have added a tree structure and at least one task.
+            </p>
+          </div>
+        </>
       ) : (
         <>
-          <div className="fixed left-0 right-0 top-0 z-10 bg-white pt-4">
-            <div className="mx-auto flex max-w-3xl items-center justify-between">
-              <div className="ml-2 sm:ml-0">
-                <h2 className="text-lg font-semibold">
+          <div className="sticky left-0 right-0 top-0 z-10 w-full bg-white pt-4 shadow-sm">
+            <div className="mx-auto w-full max-w-3xl items-start justify-between px-4 sm:px-6 md:flex">
+              <div className="pr-2">
+                <h2 className="text-base font-semibold sm:text-lg">
                   Task {currentTask + 1} of {config.tasks.length}{" "}
                   {config.preview ? "(Preview)" : ""}
                 </h2>
-                <p className="mt-2">
-                  {config.tasks[currentTask].description ??
-                    "[Error occurred - please report this to the study administrator]"}
-                </p>
+                <div className="text-mt-2 max-h-[30vh] overflow-y-auto pr-2 text-sm sm:text-base">
+                  <p>
+                    {config.tasks[currentTask].description ??
+                      "[Error occurred - please report this to the study administrator]"}
+                  </p>
+                </div>
               </div>
               {started && (
                 <button
                   onClick={skipTask}
-                  className="mr-2 text-blue-600 underline hover:text-blue-800 sm:mr-0"
+                  className="mt-2 shrink-0 text-sm text-blue-600 underline hover:text-blue-800 sm:text-base md:mt-1"
                 >
                   Skip task
                 </button>
               )}
             </div>
-            <div className="mt-4 h-1 bg-theme"></div>
+            <div className="mt-4 h-1 w-full bg-theme"></div>
           </div>
-          <div className="mt-32 p-4">
+
+          <div className="mx-auto w-full max-w-3xl px-4 pt-6 sm:px-6">
             {!started ? (
               <div className="flex justify-center">
                 <Button onClick={startTest} className="mb-4 text-center">
