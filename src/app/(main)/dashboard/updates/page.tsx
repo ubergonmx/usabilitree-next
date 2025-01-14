@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function UpdatesPage() {
   const user = await getCurrentUser();
-  if (!user) redirect("/signin");
+  if (!user) redirect("/login");
 
   return (
     <div>
