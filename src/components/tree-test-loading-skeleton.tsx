@@ -12,7 +12,6 @@ export function LoadingSkeleton() {
               <Skeleton className="h-5 w-full max-w-md" /> {/* Task description */}
               <Skeleton className="mt-2 h-5 w-3/4" /> {/* Additional description line */}
             </div>
-            \
           </div>
           <div className="mt-2 md:mt-1">
             <Skeleton className="h-6 w-20" /> {/* Skip task button */}
