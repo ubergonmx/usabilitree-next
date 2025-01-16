@@ -44,7 +44,7 @@ interface NavigationProps {
 }
 
 const Navigation = ({ items, onSelect, resetKey, setPathTaken }: NavigationProps) => {
-  const [treeState, setTreeState] = useState<Item[]>([]);
+  const [treeState, setTreeState] = useState<ItemWithExpanded[]>([]);
   const [selectedLink, setSelectedLink] = useState<string>();
 
   useEffect(() => {
@@ -54,12 +54,11 @@ const Navigation = ({ items, onSelect, resetKey, setPathTaken }: NavigationProps
     const initialRootLink = isOnlyRootHome ? "/" + sanitizeTreeTestLink(items[0].name) : "";
 
     // Initialize tree with expansion states
-    const initializeTree = (items: Item[]): ItemWithExpanded[] => {
+    const initializeTree = (items: Item[], level: number = 0): ItemWithExpanded[] => {
       return items.map((item) => ({
         ...item,
-        isExpanded: isOnlyRootHome,
-        // && item.name.toLowerCase().includes("home"),
-        children: item.children ? initializeTree(item.children) : undefined,
+        isExpanded: isOnlyRootHome && level === 0,
+        children: item.children ? initializeTree(item.children, level + 1) : undefined,
       }));
     };
 
@@ -295,7 +294,7 @@ export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }
 
       await storeTreeTaskResult(config.participantId, config.tasks[currentTask].id, {
         successful: false,
-        directPathTaken: !pathTaken || pathTaken === `/${rootLink}`, // true if user didn't touch the nav menu (direct skip)
+        directPathTaken: !pathTaken || pathTaken === `/${rootLink}`, // true if user didn't touch the nav menu = no path taken (direct skip)
         completionTimeSeconds: duration,
         pathTaken: pathTaken !== `/${rootLink}` ? pathTaken : "",
         skipped: true,
