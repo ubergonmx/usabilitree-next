@@ -333,7 +333,7 @@ export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }
         </>
       ) : (
         <>
-          <div className="sticky left-0 right-0 top-0 z-10 w-full bg-white pt-4 shadow-sm">
+          <div className="sticky left-0 right-0 top-0 z-10 w-full bg-white pt-3 shadow-sm sm:pt-4">
             <div className="mx-auto w-full max-w-3xl items-start justify-between px-4 sm:px-6 md:flex">
               <div className="pr-2">
                 <h2 className="text-base font-semibold sm:text-lg">
@@ -350,13 +350,13 @@ export function TreeTestComponent({ config, initialTaskIndex = 0, onTaskChange }
               {started && (
                 <button
                   onClick={skipTask}
-                  className="mt-2 shrink-0 text-sm text-blue-600 underline hover:text-blue-800 sm:text-base md:mt-1"
+                  className="mt-3 shrink-0 text-sm text-blue-600 underline hover:text-blue-800 sm:text-base md:mt-1"
                 >
                   Skip task
                 </button>
               )}
             </div>
-            <div className="mt-4 h-1 w-full bg-theme"></div>
+            <div className="mt-2 h-1 w-full bg-theme sm:mt-4"></div>
           </div>
 
           <div className="mx-auto w-full max-w-3xl px-4 pt-6 sm:px-6">
