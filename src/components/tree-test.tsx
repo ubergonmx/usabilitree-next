@@ -147,11 +147,11 @@ const Navigation = ({ items, onSelect, resetKey, setPathTaken }: NavigationProps
                 )}
               </button>
               <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  item.isExpanded ? "mt-2 max-h-[1000px]" : "max-h-0"
+                className={`grid transition-all duration-300 ease-in-out ${
+                  item.isExpanded ? "mt-2 grid-rows-[1fr]" : "grid-rows-[0fr]"
                 }`}
               >
-                {renderItems(item.children, currentPath)}
+                <div className="overflow-hidden">{renderItems(item.children, currentPath)}</div>
               </div>
             </div>
           ) : (
