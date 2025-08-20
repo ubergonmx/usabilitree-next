@@ -103,7 +103,7 @@ const updates: Update[] = [
   },
   {
     id: "7",
-    date: "2025-05-20",
+    date: "2025-06-28",
     title: "Fixes and Improvements",
     description: "Fixes and improvements to existing features",
     type: "fix",
