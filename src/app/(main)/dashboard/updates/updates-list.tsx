@@ -101,6 +101,16 @@ const updates: Update[] = [
       "If you need more studies, we can discuss this in DMs (charges may apply 😄).",
     ],
   },
+  {
+    id: "7",
+    date: "2025-05-20",
+    title: "Fixes and Improvements",
+    description: "Fixes and improvements to existing features",
+    type: "fix",
+    details: [
+      "Fixed UI bug in tree test where expanded items were not seen properly due to limited scrolling.",
+    ],
+  },
 ];
 
 export function UpdatesList() {
