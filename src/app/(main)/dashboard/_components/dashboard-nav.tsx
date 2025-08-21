@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileTextIcon, GearIcon, BellIcon } from "@/components/icons";
+import { FileTextIcon, GearIcon, BellIcon, MessageSquareCodeIcon } from "@/components/icons";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSurveyTriggers } from "@/lib/hooks/use-survey-triggers";
 
 // Store the latest update date in a constant at the top of the file
 // This makes it easier to update in one place when new content is added
@@ -41,6 +42,11 @@ interface Props {
 export function DashboardNav({ className }: Props) {
   const path = usePathname();
   const [hasUnreadUpdates, setHasUnreadUpdates] = useState(false);
+  const { triggerFeedbackRequest } = useSurveyTriggers();
+
+  const handleFeedbackClick = () => {
+    triggerFeedbackRequest("dashboard_nav");
+  };
 
   useEffect(() => {
     // Check if user has seen the latest updates
@@ -77,6 +83,17 @@ export function DashboardNav({ className }: Props) {
           </span>
         </Link>
       ))}
+      
+      {/* Feedback Button */}
+      <button
+        onClick={handleFeedbackClick}
+        className={cn(
+          "group flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+        )}
+      >
+        <MessageSquareCodeIcon className="mr-2 h-4 w-4" />
+        <span>Give Feedback</span>
+      </button>
     </nav>
   );
 }

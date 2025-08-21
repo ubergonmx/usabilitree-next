@@ -36,10 +36,19 @@ export function useSurveyTriggers() {
     });
   };
 
+  const triggerFeedbackRequest = (source: string = "dashboard_nav") => {
+    posthog?.capture("feedback_requested", {
+      source,
+      page: window.location.pathname,
+      timestamp: Date.now(),
+    });
+  };
+
   return {
     triggerStudyCompleted,
     triggerDashboardVisit,
     triggerStudyCreated,
     triggerFeatureUsed,
+    triggerFeedbackRequest,
   };
 }
