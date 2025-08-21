@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 // Store the latest update date in a constant at the top of the file
 // This makes it easier to update in one place when new content is added
-const LATEST_UPDATE_DATE = "2025-05-11"; // Update this when new content is added
+const LATEST_UPDATE_DATE = "2025-08-22"; // Update this when new content is added
 
 const items = [
   {

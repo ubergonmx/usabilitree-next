@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 import * as React from "react";
 import { Studies } from "./_components/studies";
 import { StudiesSkeleton } from "./_components/studies-skeleton";
+import { DashboardTracker } from "./_components/dashboard-tracker";
 import { Paths } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -19,6 +20,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      <DashboardTracker />
       <div className="mb-6">
         <h1 className="text-3xl font-bold md:text-4xl">Studies</h1>
         <p className="text-sm text-muted-foreground">Manage your studies here</p>

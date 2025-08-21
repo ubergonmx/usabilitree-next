@@ -111,6 +111,15 @@ const updates: Update[] = [
       "Fixed UI bug in tree test where expanded items were not seen properly due to limited scrolling.",
     ],
   },
+  {
+    id: "8",
+    date: "2025-08-22",
+    title: "Development Message",
+    description:
+      "Hello! To those who doesn't know, I'm building this website solo as of now, and it's free (up to 7 tree tests). I'd love your feedback to help me improve this and figure out fair pricing. This takes ~1 minute and it will pop-up when you're in the dashboard page. Everyone who answers will get a special promo when paid plans launch.",
+    type: "message",
+    details: [],
+  },
 ];
 
 export function UpdatesList() {
