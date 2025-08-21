@@ -83,7 +83,7 @@ export function DashboardNav({ className }: Props) {
           </span>
         </Link>
       ))}
-      
+
       {/* Feedback Button */}
       <button
         onClick={handleFeedbackClick}
