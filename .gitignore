@@ -46,3 +46,6 @@ dump.sql
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Scripts directory
+scripts/*
