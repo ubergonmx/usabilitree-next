@@ -1,36 +1,206 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <img src="src/assets/icons/icon-transparent.svg" alt="Usabilitree Logo" width="120" height="120">
+  
+  # Usabilitree
+  
+  **Optimize UX with Tree Testing**
+  
+  Create, conduct, and analyze tree tests for free. Optimize your information architecture with valuable insights.
+  
+  🌐 **Live Site**: [usabilitree.com](https://usabilitree.com)
+</div>
 
-## Getting Started
+## 📋 About
 
-First, run the development server:
+Usabilitree is a comprehensive tree testing platform that helps UX researchers and designers optimize their information architecture. Tree testing is a usability technique used to evaluate the findability of topics in a website's navigation structure.
+
+### ✨ Features
+
+- **Free Tree Testing**: Create and conduct tree tests at no cost
+- **Easy Test Creation**: Intuitive interface for setting up tree structures
+- **Real-time Analytics**: Analyze participant behavior and navigation patterns
+- **User-friendly Dashboard**: Manage all your tests from a centralized location
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and npm/yarn/pnpm
+- A database (SQLite/Turso for development)
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/ubergonmx/usabilitree-next.git
+cd usabilitree-next
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Set up environment variables:
+
+```bash
+cp .env.example .env.local
+# Edit .env.local with your configuration
+```
+
+4. Set up the database:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+5. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js 14](https://nextjs.org) with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **Database**: Drizzle ORM with SQLite/Turso
+- **Authentication**: Custom auth with Arctic
+- **Animations**: Framer Motion
+- **Analytics**: PostHog + Vercel Analytics
+- **Error Tracking**: Sentry
+- **Email**: React Email
 
-## Learn More
+## 📁 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Next.js app router pages
+│   ├── (auth)/            # Authentication pages
+│   ├── (landing)/         # Marketing pages
+│   ├── (main)/            # Main application
+│   └── (tools)/           # Tree testing tools
+├── components/            # Reusable components
+│   └── ui/               # shadcn/ui components
+├── db/                    # Database schema and configuration
+├── lib/                   # Utilities and configurations
+│   ├── auth/             # Authentication logic
+│   ├── treetest/         # Tree testing functionality
+│   └── validators/       # Zod schemas
+└── styles/               # Global styles
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🗃️ Database Commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# Generate migrations
+npm run db:generate
 
-## Deploy on Vercel
+# Apply migrations
+npm run db:migrate
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Push schema changes
+npm run db:push
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Open Drizzle Studio
+npm run db:studio
+```
+
+## 🔧 Development
+
+```bash
+# Format code
+npm run format
+
+# Type checking
+npm run types
+
+# Lint
+npm run lint
+
+# Build for production
+npm run build
+
+# Start production server
+npm run start
+```
+
+## 🚀 Deployment
+
+The application is designed to be deployed on [Vercel](https://vercel.com) with automatic deployments from the main branch.
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and configure the following variables:
+
+#### Core Application
+
+- `NEXT_PUBLIC_APP_URL` - Your application URL (e.g., `http://localhost:3000` for development)
+- `NODE_ENV` - Environment mode (`development`, `production`)
+- `SECRET_HASH` - Secret hash for encryption (generate a secure random string)
+
+#### Database
+
+- `DATABASE_URL` - Database connection string (e.g., `file:local.db` for SQLite)
+- `DATABASE_AUTH_TOKEN` - Database authentication token (required for Turso)
+
+#### Authentication
+
+- `DISCORD_CLIENT_ID` - Discord OAuth client ID
+- `DISCORD_CLIENT_SECRET` - Discord OAuth client secret
+- `DISCORD_BOT_TOKEN` - Discord bot token (for notifications)
+- `GOOGLE_CLIENT_ID` - Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
+
+#### Email Configuration
+
+- `MOCK_SEND_EMAIL` - Set to `true` for development to mock email sending
+- `EMAIL_SENDER` - Email address for sending emails
+
+**Option 1: SendGrid**
+
+- `SENDGRID_API_KEY` - SendGrid API key
+
+**Option 2: SMTP (Nodemailer)**
+
+- `SMTP_HOST` - SMTP server host
+- `SMTP_PORT` - SMTP server port
+- `SMTP_USER` - SMTP username
+- `SMTP_PASSWORD` - SMTP password
+
+#### Analytics & Monitoring
+
+- `NEXT_PUBLIC_POSTHOG_KEY` - PostHog analytics key
+- `NEXT_PUBLIC_POSTHOG_HOST` - PostHog host URL
+- `SENTRY_AUTH_TOKEN` - Sentry authentication token for error tracking
+
+#### Application Limits
+
+- `STUDY_LIMIT` - Maximum number of studies per user (default: 7)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE) - see the LICENSE file for details or https://www.gnu.org/licenses/agpl-3.0.txt.
+
+## 👨‍💻 Author
+
+Built by [aaronpal](https://github.com/ubergonmx)
+
+## 📞 Support
+
+- **Discord**: [Contact on Discord](https://discord.com/users/263841596213035009)
+- **Issues**: [GitHub Issues](https://github.com/ubergonmx/usabilitree-next/issues)
+
+---
+
+_Optimize your information architecture with Usabilitree - Free tree testing for better UX._
