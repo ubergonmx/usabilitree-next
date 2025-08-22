@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1731447689680,
+      "tag": "0000_dashing_nick_fury",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1745792316748,
+      "tag": "0001_outgoing_gamora",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1745924831922,
+      "tag": "0002_complex_jack_power",
+      "breakpoints": true
+    }
+  ]
+}

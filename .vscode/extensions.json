@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "alfredbirk.tailwind-documentation",
+    "bradlc.vscode-tailwindcss",
+    "mhutchie.git-graph"
+  ]
+}
