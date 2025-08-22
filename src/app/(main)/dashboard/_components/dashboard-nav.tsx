@@ -6,6 +6,7 @@ import { FileTextIcon, GearIcon, BellIcon } from "@/components/icons";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { FeedbackButton } from "@/components/feedback-button";
+import { CoffeeButton } from "@/components/coffee-button";
 
 // Store the latest update date in a constant at the top of the file
 // This makes it easier to update in one place when new content is added
@@ -80,6 +81,7 @@ export function DashboardNav({ className }: Props) {
       ))}
 
       <FeedbackButton />
+      <CoffeeButton />
     </nav>
   );
 }
