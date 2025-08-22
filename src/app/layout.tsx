@@ -11,9 +11,6 @@ import PostHogPageView from "@/components/posthog/post-hog-page-view-";
 import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
 
-// import { Inter } from "next/font/google";
-// const inter = Inter({ subsets: ["latin"] });
-
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
