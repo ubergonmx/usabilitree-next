@@ -116,7 +116,7 @@ const updates: Update[] = [
     date: "2025-08-22",
     title: "Development Message",
     description:
-      "Hello! To those who doesn't know, I'm building this website solo as of now, and it's free (up to 7 tree tests). I'd love your feedback to help me improve this and figure out fair pricing. This takes ~1 minute and it will pop-up when you're in the dashboard page. Everyone who answers will get a special promo when paid plans launch.",
+      "Hello! To those who doesn't know, I'm building this website solo as of now, and it's free (up to 7 tree tests). I'd love your feedback to help me improve this and figure out fair pricing. This takes about 1 minute and will pop-up when you're on the dashboard page, or you can click 'Give Feedback' button on the navbar. Everyone who answers will get a special promo when paid plans launch.",
     type: "message",
     details: [],
   },

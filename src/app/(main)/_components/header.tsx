@@ -2,6 +2,7 @@ import Link from "next/link";
 import { UserDropdown } from "@/app/(main)/_components/user-dropdown";
 import { getCurrentUser } from "@/lib/auth/session";
 import Logo from "@/components/logo";
+import { FeedbackButton } from "@/components/feedback-button";
 
 export const Header = async () => {
   const user = await getCurrentUser();
@@ -12,7 +13,12 @@ export const Header = async () => {
         <Link className="flex items-center justify-center text-xl font-medium" href="/">
           <Logo />
         </Link>
-        {user ? <UserDropdown email={user.email} avatar={user.avatar} className="ml-auto" /> : null}
+        {user ? (
+          <div className="ml-auto flex items-center gap-2">
+            <FeedbackButton variant="header" />
+            <UserDropdown email={user.email} avatar={user.avatar} />
+          </div>
+        ) : null}
       </div>
     </header>
   );
